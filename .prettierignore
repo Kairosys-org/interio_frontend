@@ -1,0 +1,9 @@
+.svelte-kit
+build
+node_modules
+coverage
+test-results
+playwright-report
+.playwright-cli
+.opencode
+pnpm-lock.yaml

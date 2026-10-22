@@ -1,1 +1,12 @@
+node_modules/
+.svelte-kit/
+build/
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+.playwright-cli/
 .opencode/
+.vite/

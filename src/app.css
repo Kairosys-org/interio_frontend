@@ -1,0 +1,249 @@
+@import 'tailwindcss';
+@import './lib/styles/tokens.css';
+
+@theme {
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI',
+		Roboto, sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+	--text-display: 2.75rem;
+	--text-display--line-height: 1.1;
+	--text-display--font-weight: 700;
+	--text-display--letter-spacing: -0.02em;
+
+	--text-large-title: 2.125rem;
+	--text-large-title--line-height: 1.15;
+	--text-large-title--font-weight: 700;
+	--text-large-title--letter-spacing: -0.02em;
+
+	--text-title-1: 1.75rem;
+	--text-title-1--line-height: 1.2;
+	--text-title-1--font-weight: 600;
+	--text-title-1--letter-spacing: -0.015em;
+
+	--text-title-2: 1.375rem;
+	--text-title-2--line-height: 1.25;
+	--text-title-2--font-weight: 600;
+	--text-title-2--letter-spacing: -0.01em;
+
+	--text-title-3: 1.1875rem;
+	--text-title-3--line-height: 1.3;
+	--text-title-3--font-weight: 600;
+	--text-title-3--letter-spacing: -0.005em;
+
+	--text-headline: 1.0625rem;
+	--text-headline--line-height: 1.35;
+	--text-headline--font-weight: 600;
+
+	--text-body: 1.0625rem;
+	--text-body--line-height: 1.5;
+	--text-body--font-weight: 400;
+
+	--text-callout: 1rem;
+	--text-callout--line-height: 1.45;
+	--text-callout--font-weight: 400;
+
+	--text-subheadline: 0.9375rem;
+	--text-subheadline--line-height: 1.4;
+	--text-subheadline--font-weight: 500;
+
+	--text-footnote: 0.8125rem;
+	--text-footnote--line-height: 1.4;
+	--text-footnote--font-weight: 400;
+
+	--text-caption: 0.75rem;
+	--text-caption--line-height: 1.35;
+	--text-caption--font-weight: 500;
+	--text-caption--letter-spacing: 0.01em;
+
+	--spacing: 0.25rem;
+
+	--radius-sm: 0.5rem;
+	--radius-md: 0.75rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.375rem;
+	--radius-full: 9999px;
+}
+
+@theme inline {
+	--color-canvas: var(--color-bg-primary);
+	--color-canvas-grouped: var(--color-bg-secondary);
+	--color-canvas-nested: var(--color-bg-tertiary);
+	--color-ink: var(--color-text-primary);
+	--color-ink-secondary: var(--color-text-secondary);
+	--color-ink-tertiary: var(--color-text-tertiary);
+	--color-ink-disabled: var(--color-text-disabled);
+	--color-hairline: var(--color-separator);
+	--color-hairline-strong: var(--color-border-strong);
+	--color-brand: var(--color-accent);
+	--color-brand-hover: var(--color-accent-hover);
+	--color-brand-soft: var(--color-accent-soft);
+	--color-on-brand: var(--color-on-accent);
+	--color-critical: var(--color-danger);
+	--color-critical-soft: var(--color-danger-soft);
+	--color-critical-ink: var(--color-danger-text);
+	--color-safe: var(--color-success);
+	--color-safe-soft: var(--color-success-soft);
+	--color-safe-ink: var(--color-success-text);
+	--color-caution: var(--color-warning);
+	--color-caution-soft: var(--color-warning-soft);
+	--color-caution-ink: var(--color-warning-text);
+	--color-notice: var(--color-info);
+	--color-notice-soft: var(--color-info-soft);
+	--color-notice-ink: var(--color-info-text);
+	--color-chip-neutral: var(--color-neutral-soft);
+	--color-chip-neutral-ink: var(--color-neutral-text);
+	--color-ring: var(--color-focus);
+
+	--shadow-e1: var(--shadow-1);
+	--shadow-e2: var(--shadow-2);
+	--shadow-e3: var(--shadow-3);
+	--shadow-e4: var(--shadow-4);
+	--shadow-e5: var(--shadow-5);
+
+}
+
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+		background: var(--color-bg-primary);
+	}
+
+	body {
+		margin: 0;
+		min-height: 100dvh;
+		background: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		font-family: var(--font-sans);
+		font-size: var(--text-body);
+		line-height: 1.5;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-wrap: pretty;
+	}
+
+	:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+
+	::selection {
+		background: var(--color-accent-soft);
+		color: var(--color-text-primary);
+	}
+}
+
+/* ---------- Layout utilities built from layout tokens ---------- */
+
+@utility w-sidebar {
+	width: var(--layout-sidebar);
+}
+
+@utility w-sidebar-collapsed {
+	width: var(--layout-sidebar-collapsed);
+}
+
+@utility h-topbar {
+	height: var(--layout-topbar);
+}
+
+@utility max-w-content-data {
+	max-width: var(--layout-content-data);
+}
+
+@utility max-w-content-form {
+	max-width: var(--layout-content-form);
+}
+
+@utility max-w-content-reading {
+	max-width: var(--layout-content-reading);
+}
+
+@utility min-h-target {
+	min-height: var(--layout-target-min);
+}
+
+@utility min-w-target {
+	min-width: var(--layout-target-min);
+}
+
+@utility min-h-row {
+	min-height: var(--layout-row-comfortable);
+}
+
+@utility min-h-row-compact {
+	min-height: var(--layout-row-compact);
+}
+
+@utility gap-target {
+	gap: var(--layout-target-gap);
+}
+
+/* Page gutter: 16 px phone / 24 px tablet / 32 px desktop. */
+@layer components {
+	.page-container {
+		width: 100%;
+		margin-inline: auto;
+		padding-inline: var(--layout-gutter-mobile);
+	}
+
+	@media (min-width: 768px) {
+		.page-container {
+			padding-inline: var(--layout-gutter-tablet);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.page-container {
+			padding-inline: var(--layout-gutter-desktop);
+		}
+	}
+
+	/* Floating-surface material (top bar, sheets, menus, dialogs only). */
+	.material {
+		background: color-mix(in oklab, var(--color-bg-primary) 82%, transparent);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		backdrop-filter: blur(20px) saturate(180%);
+		border-bottom: 1px solid color-mix(in oklab, var(--color-text-primary) 10%, transparent);
+	}
+
+	.material-solid {
+		background: var(--color-bg-primary);
+	}
+
+	/* Skip link: first focusable element, visible only on focus. */
+	.skip-link {
+		position: fixed;
+		inset-block-start: var(--spacing-2);
+		inset-inline-start: var(--spacing-2);
+		z-index: 100;
+		transform: translateY(-200%);
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+		border-radius: var(--radius-md);
+		padding: var(--spacing-3) var(--spacing-4);
+		font-size: var(--text-callout);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.skip-link:focus {
+		transform: translateY(0);
+	}
+}
+
+/* Extra accessibility adaptations on top of the canonical token block. */
+@media (prefers-contrast: more) {
+	:root {
+		--color-text-secondary: var(--color-text-primary);
+		--color-text-tertiary: var(--color-text-secondary);
+	}
+
+	.material {
+		background: var(--color-bg-primary) !important;
+		-webkit-backdrop-filter: none !important;
+		backdrop-filter: none !important;
+	}
+}
