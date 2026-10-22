@@ -158,7 +158,8 @@
 				</div>
 			{:else if pending}
 				<p class="mt-2 text-footnote text-ink-secondary">
-					{pending.email} belongs to more than one workspace. Pick the one you want to open.
+					Pick the workspace you want to open with {pending.email}. If yours is not listed, ask your
+					administrator for an invitation.
 				</p>
 
 				<div class="mt-6 flex flex-col gap-4">
