@@ -1,6 +1,11 @@
 import { COLLECTIONS } from '$shared/data/collections';
 import { DEMO_PASSWORD, MFA_CODE } from '$shared/data/demo-seed';
-import type { AppUserRecord, TenantRecord, UserInvitationRecord } from '$shared/data/records';
+import type {
+	AppUserRecord,
+	AuditEventRecord,
+	TenantRecord,
+	UserInvitationRecord
+} from '$shared/data/records';
 import { permissionsForRoles } from '$shared/domain/permissions';
 import { ROLE_LABELS } from '$shared/domain/roles';
 import type { SessionUser, TenantIdentity } from '$shared/domain/user';
@@ -44,9 +49,108 @@ const GENERIC_AUTH_MESSAGE = 'Email or password is incorrect.';
 const TENANT_UNAVAILABLE_MESSAGE = 'This workspace is not available. Contact your administrator.';
 const INVALID_CODE_MESSAGE = 'That code is not valid.';
 const EXPIRED_SESSION_MESSAGE = 'Your session has expired.';
+const LOCKOUT_MESSAGE = 'Too many sign-in attempts. Try again in 15 minutes.';
+const LOCKOUT_THRESHOLD = 10;
+const LOCKOUT_WINDOW_MS = 15 * 60 * 1000;
 
 /** Pending MFA challenges live in memory only, like a short-lived server record. */
 const pendingChallenges = new Map<string, { userId: string }>();
+
+interface AuditInput {
+	tenantId: string | null;
+	actorUserId: string | null;
+	actorEmail: string;
+	action: string;
+	subjectType: string;
+	subjectId: string | null;
+	payload?: Record<string, unknown> | null;
+}
+
+/**
+ * Append-only tenant audit trail (R3, architecture §4.9). Runtime events use
+ * the real clock; only seed data is pinned to the demo clock.
+ */
+function recordAudit(input: AuditInput): void {
+	const event: AuditEventRecord = {
+		id: newUuid(),
+		scope: 'tenant',
+		tenantId: input.tenantId,
+		actorUserId: input.actorUserId,
+		actorEmail: input.actorEmail,
+		action: input.action,
+		subjectType: input.subjectType,
+		subjectId: input.subjectId,
+		occurredAt: new Date().toISOString(),
+		payload: input.payload ?? null
+	};
+	updateCollection<AuditEventRecord>(COLLECTIONS.auditEvents, (rows) => [...rows, event]);
+}
+
+function readAuditEvents(): AuditEventRecord[] {
+	return getCollection<AuditEventRecord>(COLLECTIONS.auditEvents);
+}
+
+function recentFailureCount(email: string): number {
+	const normalised = normalisedEmail(email);
+	const cutoff = Date.now() - LOCKOUT_WINDOW_MS;
+	return readAuditEvents().filter(
+		(event) =>
+			event.action === 'login_failure' &&
+			normalisedEmail(event.actorEmail) === normalised &&
+			Date.parse(event.occurredAt) >= cutoff
+	).length;
+}
+
+/**
+ * N5 / S34: ten failed attempts inside fifteen minutes lock the account out
+ * until the oldest failure leaves the window. The lockout is global per email,
+ * not per workspace, so guessing across tenants cannot reset the counter.
+ */
+function assertNotLocked(email: string, user: AppUserRecord | null = null): void {
+	if (recentFailureCount(email) < LOCKOUT_THRESHOLD) return;
+	recordAudit({
+		tenantId: user?.tenantId ?? null,
+		actorUserId: user?.id ?? null,
+		actorEmail: email,
+		action: 'denied',
+		subjectType: 'session',
+		subjectId: user?.id ?? null,
+		payload: { reason: 'locked_out', windowMinutes: LOCKOUT_WINDOW_MS / 60_000 }
+	});
+	throw new ApiError({
+		code: ApiErrorCode.RATE_LIMITED,
+		message: LOCKOUT_MESSAGE,
+		status: 429
+	});
+}
+
+function recordLoginFailure(
+	email: string,
+	reason: 'invalid_credentials' | 'unknown_account' | 'invalid_mfa_code',
+	user: AppUserRecord | null = null
+): void {
+	recordAudit({
+		tenantId: user?.tenantId ?? null,
+		actorUserId: user?.id ?? null,
+		actorEmail: normalisedEmail(email),
+		action: 'login_failure',
+		subjectType: 'session',
+		subjectId: user?.id ?? null,
+		payload: { reason }
+	});
+}
+
+function recordLoginSuccess(user: AppUserRecord): void {
+	recordAudit({
+		tenantId: user.tenantId,
+		actorUserId: user.id,
+		actorEmail: user.email,
+		action: 'login_success',
+		subjectType: 'session',
+		subjectId: user.id,
+		payload: { platform: user.platform }
+	});
+}
 
 function unauthorized(message = GENERIC_AUTH_MESSAGE): ApiError {
 	return new ApiError({
@@ -155,7 +259,18 @@ function toSessionUser(user: AppUserRecord): SessionUser {
 function assertTenantAvailable(user: AppUserRecord): TenantRecord | null {
 	if (user.platform) return null;
 	const tenant = findTenant(user.tenantId);
-	if (!tenant || tenant.status !== 'active') throw forbidden();
+	if (!tenant || tenant.status !== 'active') {
+		recordAudit({
+			tenantId: user.tenantId,
+			actorUserId: user.id,
+			actorEmail: user.email,
+			action: 'denied',
+			subjectType: 'tenant',
+			subjectId: user.tenantId,
+			payload: { reason: tenant ? 'tenant_unavailable' : 'tenant_missing' }
+		});
+		throw forbidden();
+	}
 	return tenant;
 }
 
@@ -173,6 +288,7 @@ function beginAuthentication(user: AppUserRecord): LoginResult {
 		return { status: 'mfa_required', challengeId };
 	}
 	const session = startSession(user);
+	recordLoginSuccess(user);
 	return { status: 'authenticated', token: session.token, user: session.user };
 }
 
@@ -207,9 +323,26 @@ function invitationPreview(invitation: UserInvitationRecord): InvitationPreview 
 
 export async function mockLogin(input: LoginInput): Promise<LoginResult> {
 	const candidates = usersByEmail(input.email);
-	if (candidates.length === 0) throw unauthorized();
+	assertNotLocked(input.email, candidates[0] ?? null);
 
 	const tenantSlug = input.tenantSlug?.trim();
+
+	/*
+	 * TEN-01: an email that resolves to no tenant still gets the workspace step
+	 * (the invite path starts there). Selecting a workspace then fails with the
+	 * generic credential message, so no account existence leaks.
+	 */
+	if (candidates.length === 0) {
+		if (tenantSlug) {
+			recordLoginFailure(input.email, 'unknown_account');
+			throw unauthorized();
+		}
+		const tenants = readTenants()
+			.filter((tenant) => tenant.status === 'active')
+			.map(toTenantChoice);
+		if (tenants.length === 0) throw unauthorized();
+		return { status: 'workspace_required', tenants };
+	}
 
 	if (tenantSlug) {
 		const user = candidates.find((candidate) => {
@@ -217,8 +350,14 @@ export async function mockLogin(input: LoginInput): Promise<LoginResult> {
 			return tenant?.slug === tenantSlug;
 		});
 		// An unknown workspace is never revealed as "exists but not yours".
-		if (!user) throw unauthorized();
-		if (user.password !== input.password) throw unauthorized();
+		if (!user) {
+			recordLoginFailure(input.email, 'unknown_account', candidates[0]);
+			throw unauthorized();
+		}
+		if (user.password !== input.password) {
+			recordLoginFailure(input.email, 'invalid_credentials', user);
+			throw unauthorized();
+		}
 		assertTenantAvailable(user);
 		return beginAuthentication(user);
 	}
@@ -235,7 +374,10 @@ export async function mockLogin(input: LoginInput): Promise<LoginResult> {
 	}
 
 	const user = candidates[0];
-	if (user.password !== input.password) throw unauthorized();
+	if (user.password !== input.password) {
+		recordLoginFailure(input.email, 'invalid_credentials', user);
+		throw unauthorized();
+	}
 	assertTenantAvailable(user);
 	return beginAuthentication(user);
 }
@@ -243,7 +385,6 @@ export async function mockLogin(input: LoginInput): Promise<LoginResult> {
 export async function mockVerifyMfa(input: MfaVerifyInput): Promise<AuthSession> {
 	const challenge = pendingChallenges.get(input.challengeId);
 	if (!challenge) throw validation(INVALID_CODE_MESSAGE);
-	if (input.code.trim() !== MFA_CODE) throw validation(INVALID_CODE_MESSAGE);
 
 	const user = readUsers().find((candidate) => candidate.id === challenge.userId);
 	if (!user) {
@@ -251,9 +392,18 @@ export async function mockVerifyMfa(input: MfaVerifyInput): Promise<AuthSession>
 		throw unauthorized(EXPIRED_SESSION_MESSAGE);
 	}
 
+	assertNotLocked(user.email, user);
+
+	if (input.code.trim() !== MFA_CODE) {
+		recordLoginFailure(user.email, 'invalid_mfa_code', user);
+		throw validation(INVALID_CODE_MESSAGE);
+	}
+
 	assertTenantAvailable(user);
 	pendingChallenges.delete(input.challengeId);
-	return startSession(user);
+	const session = startSession(user);
+	recordLoginSuccess(user);
+	return session;
 }
 
 export async function mockMe(): Promise<SessionUser> {
@@ -268,6 +418,18 @@ export async function mockMe(): Promise<SessionUser> {
 }
 
 export async function mockLogout(): Promise<void> {
+	const user = readUsers().find((candidate) => candidate.id === userIdFromToken(getAccessToken()));
+	if (user) {
+		recordAudit({
+			tenantId: user.tenantId,
+			actorUserId: user.id,
+			actorEmail: user.email,
+			action: 'logout',
+			subjectType: 'session',
+			subjectId: user.id,
+			payload: null
+		});
+	}
 	clearTokens();
 }
 
@@ -301,6 +463,15 @@ export async function mockAcceptInvitation(input: AcceptInvitationInput): Promis
 	updateCollection<UserInvitationRecord>(COLLECTIONS.userInvitations, (rows) =>
 		rows.map((row) => (row.id === invitation.id ? { ...row, acceptedAt: now } : row))
 	);
+	recordAudit({
+		tenantId: invitation.tenantId,
+		actorUserId: user.id,
+		actorEmail: user.email,
+		action: 'invite_accept',
+		subjectType: 'app_user',
+		subjectId: user.id,
+		payload: { role: invitation.role, invitationId: invitation.id }
+	});
 
 	return startSession(user);
 }

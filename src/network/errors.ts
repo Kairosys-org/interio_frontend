@@ -14,6 +14,7 @@ export const ApiErrorCode = {
 	API_DATA_SOURCE_NOT_AVAILABLE: 'api_data_source_not_available',
 	WORKSPACE_REQUIRED: 'workspace_required',
 	MFA_REQUIRED: 'mfa_required',
+	RATE_LIMITED: 'rate_limited',
 	GATE_BLOCKED: 'gate_blocked',
 	STATE_CONFLICT: 'state_conflict'
 } as const;

@@ -70,9 +70,12 @@ describe('mockRequest', () => {
 		const failure = new Error('Storage exploded.');
 
 		await expect(
-			mockRequest(() => {
-				throw failure;
-			}, { latencyMs: 0 })
+			mockRequest(
+				() => {
+					throw failure;
+				},
+				{ latencyMs: 0 }
+			)
 		).rejects.toMatchObject({
 			name: 'ApiError',
 			code: ApiErrorCode.NETWORK_ERROR,
@@ -81,9 +84,12 @@ describe('mockRequest', () => {
 		});
 
 		try {
-			await mockRequest(() => {
-				throw failure;
-			}, { latencyMs: 0 });
+			await mockRequest(
+				() => {
+					throw failure;
+				},
+				{ latencyMs: 0 }
+			);
 			expect.unreachable('mockRequest should have rejected');
 		} catch (error) {
 			expect(isApiError(error)).toBe(true);
@@ -101,9 +107,12 @@ describe('mockRequest', () => {
 		});
 
 		await expect(
-			mockRequest(() => {
-				throw original;
-			}, { latencyMs: 0 })
+			mockRequest(
+				() => {
+					throw original;
+				},
+				{ latencyMs: 0 }
+			)
 		).rejects.toBe(original);
 	});
 

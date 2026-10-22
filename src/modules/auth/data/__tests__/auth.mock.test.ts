@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { COLLECTIONS } from '$shared/data/collections';
 import { DEMO_INVITATION, DEMO_PASSWORD, MFA_CODE } from '$shared/data/demo-seed';
-import type { AppUserRecord, TenantRecord, UserInvitationRecord } from '$shared/data/records';
+import type {
+	AppUserRecord,
+	AuditEventRecord,
+	TenantRecord,
+	UserInvitationRecord
+} from '$shared/data/records';
 import { newUuid } from '$shared/lib/uuid';
 import { ApiError, isApiError } from '$network/errors';
 import { getCollection, resetMockDb, updateCollection } from '$network/mock-backend';
@@ -142,6 +147,91 @@ describe('auth mock login', () => {
 			}
 		);
 	});
+
+	it('offers the workspace step to an email that resolves to no tenant, listing active tenants only', async () => {
+		const result = await mockLogin({
+			email: 'stranger@example.com',
+			password: 'not-a-real-password'
+		});
+
+		expect(result.status).toBe('workspace_required');
+		if (result.status !== 'workspace_required') return;
+		expect(result.tenants.map((tenant) => tenant.slug).sort()).toEqual(['harbour', 'opulent']);
+		expect(getAccessToken()).toBeNull();
+
+		// Choosing a workspace still fails with the generic credential message.
+		await expectApiError(
+			mockLogin({
+				email: 'stranger@example.com',
+				password: 'not-a-real-password',
+				tenantSlug: 'opulent'
+			}),
+			{ status: 401, code: 'unauthorized', message: 'Email or password is incorrect.' }
+		);
+	});
+});
+
+describe('auth mock audit and lockout', () => {
+	it('writes a login_success row for an authenticated session', async () => {
+		const login = await mockLogin({
+			email: 'sales@opulentinteriors.co.uk',
+			password: DEMO_PASSWORD
+		});
+		expect(login.status).toBe('authenticated');
+		if (login.status !== 'authenticated') return;
+
+		const events = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents);
+		const success = events.filter((event) => event.action === 'login_success');
+		expect(success).toHaveLength(1);
+		expect(success[0].actorUserId).toBe(login.user.id);
+		expect(success[0].actorEmail).toBe('sales@opulentinteriors.co.uk');
+		expect(success[0].tenantId).toBe(login.user.tenant?.id);
+		expect(success[0].scope).toBe('tenant');
+	});
+
+	it('writes a login_failure row without storing the attempted password', async () => {
+		await expectApiError(
+			mockLogin({ email: 'sales@opulentinteriors.co.uk', password: 'wrong-password-1' }),
+			{ status: 401, code: 'unauthorized', message: 'Email or password is incorrect.' }
+		);
+
+		const failures = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents).filter(
+			(event) => event.action === 'login_failure'
+		);
+		expect(failures).toHaveLength(1);
+		expect(failures[0].actorEmail).toBe('sales@opulentinteriors.co.uk');
+		expect(failures[0].actorUserId).toBe(seededUser('sales@opulentinteriors.co.uk').id);
+		expect(JSON.stringify(failures[0])).not.toContain('wrong-password-1');
+	});
+
+	it('locks the account after ten failed attempts inside fifteen minutes', async () => {
+		for (let attempt = 0; attempt < 10; attempt += 1) {
+			await expectApiError(
+				mockLogin({ email: 'sales@opulentinteriors.co.uk', password: `wrong-${attempt}` }),
+				{ status: 401, code: 'unauthorized', message: 'Email or password is incorrect.' }
+			);
+		}
+
+		await expectApiError(
+			mockLogin({ email: 'sales@opulentinteriors.co.uk', password: DEMO_PASSWORD }),
+			{
+				status: 429,
+				code: 'rate_limited',
+				message: 'Too many sign-in attempts. Try again in 15 minutes.'
+			}
+		);
+		expect(getAccessToken()).toBeNull();
+
+		const events = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents);
+		expect(events.filter((event) => event.action === 'login_failure')).toHaveLength(10);
+		expect(
+			events.some(
+				(event) =>
+					event.action === 'denied' &&
+					(event.payload as { reason?: string } | null)?.reason === 'locked_out'
+			)
+		).toBe(true);
+	});
 });
 
 describe('auth mock MFA', () => {
@@ -159,10 +249,22 @@ describe('auth mock MFA', () => {
 			message: 'That code is not valid.'
 		});
 
+		const failedCode = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents).filter(
+			(event) => event.action === 'login_failure'
+		);
+		expect(failedCode).toHaveLength(1);
+		expect((failedCode[0].payload as { reason?: string } | null)?.reason).toBe('invalid_mfa_code');
+
 		const session = await mockVerifyMfa({ challengeId: login.challengeId, code: MFA_CODE });
 		expect(session.user.email).toBe('admin@opulentinteriors.co.uk');
 		expect(session.token).toBe(`mock-token:${session.user.id}`);
 		expect(getAccessToken()).toBe(session.token);
+
+		const success = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents).filter(
+			(event) => event.action === 'login_success'
+		);
+		expect(success).toHaveLength(1);
+		expect(success[0].actorUserId).toBe(session.user.id);
 
 		// The challenge is single-use.
 		await expectApiError(mockVerifyMfa({ challengeId: login.challengeId, code: MFA_CODE }), {
@@ -236,6 +338,14 @@ describe('auth mock invitations', () => {
 		);
 		expect(invitation?.acceptedAt).not.toBeNull();
 
+		const accepted = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents).filter(
+			(event) => event.action === 'invite_accept'
+		);
+		expect(accepted).toHaveLength(1);
+		expect(accepted[0].subjectId).toBe(session.user.id);
+		expect(accepted[0].tenantId).toBe(session.user.tenant?.id);
+		expect((accepted[0].payload as { role?: string } | null)?.role).toBe('designer');
+
 		await expectApiError(mockGetInvitation(DEMO_INVITATION.token), {
 			status: 409,
 			code: 'conflict',
@@ -279,5 +389,12 @@ describe('auth mock tenant status', () => {
 				message: 'This workspace is not available. Contact your administrator.'
 			}
 		);
+
+		const denied = getCollection<AuditEventRecord>(COLLECTIONS.auditEvents).filter(
+			(event) => event.action === 'denied'
+		);
+		expect(denied).toHaveLength(1);
+		expect(denied[0].tenantId).toBe(northgate.id);
+		expect((denied[0].payload as { reason?: string } | null)?.reason).toBe('tenant_unavailable');
 	});
 });
