@@ -4,7 +4,8 @@
 	import { page } from '$app/state';
 	import type { Pathname } from '$app/types';
 	import type { Snippet } from 'svelte';
-	import { sessionStore } from '$shared/application/session';
+	import { authApi } from '$modules/auth/data/api';
+	import { clearSession, sessionStore } from '$shared/application/session';
 	import { PLATFORM_PERMISSIONS, hasPermission } from '$shared/domain/permissions';
 	import { ForbiddenPage, Skeleton } from '$shared/presentation/ui';
 	import PlatformShell from '$modules/platform-tenants/presentation/components/PlatformShell.svelte';
@@ -28,13 +29,27 @@
 			hasPermission(user.permissions, PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW)
 	);
 
+	/** An explicit sign-out must not be re-branded as a deep-link redirect. */
+	let signingOut = $state(false);
+
 	$effect(() => {
-		if (initializing) return;
+		if (initializing || signingOut) return;
 		if (user) return;
 		void goto(resolve(`/login?redirect=${encodeURIComponent(page.url.pathname)}` as Pathname), {
 			replaceState: true
 		});
 	});
+
+	/** Revoke the platform session before clearing it locally. */
+	async function signOut(): Promise<void> {
+		signingOut = true;
+		try {
+			await authApi.logout();
+		} finally {
+			clearSession();
+			await goto(resolve('/login' as Pathname), { replaceState: true });
+		}
+	}
 </script>
 
 {#if initializing}
@@ -48,5 +63,5 @@
 {:else if !canViewPlatform}
 	<ForbiddenPage variant="forbidden" />
 {:else}
-	<PlatformShell>{@render children()}</PlatformShell>
+	<PlatformShell onSignOut={signOut}>{@render children()}</PlatformShell>
 {/if}

@@ -1,7 +1,9 @@
 <script lang="ts">
+	import '../app.css';
 	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
+	import { authApi } from '$modules/auth/data/api';
 	import { applyTenantBranding } from '$shared/application/branding';
 	import { session, sessionStore } from '$shared/application/session';
 	import { Toaster } from '$shared/presentation/ui';
@@ -9,8 +11,9 @@
 	let { children }: { children: Snippet } = $props();
 
 	onMount(() => {
-		// ORCHESTRATOR: pass authApi.me as the loader once the auth module lands.
-		void session.init();
+		// The session store stays free of feature knowledge: the auth facade is
+		// injected here, so a stored token is exchanged for `/auth/me` on reload.
+		void session.init(() => authApi.me());
 	});
 
 	// Tenant branding is applied on the document root before the authenticated

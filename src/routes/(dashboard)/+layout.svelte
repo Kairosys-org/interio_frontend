@@ -5,7 +5,8 @@
 	import type { Pathname } from '$app/types';
 	import type { Snippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { sessionStore } from '$shared/application/session';
+	import { authApi } from '$modules/auth/data/api';
+	import { clearSession, sessionStore } from '$shared/application/session';
 	import { hasPermission } from '$shared/domain/permissions';
 	import { permissionForRoute } from '$shared/domain/routePermissions';
 	import { AppShell, ForbiddenPage, Skeleton } from '$shared/presentation/ui';
@@ -19,6 +20,22 @@
 	const allowed = $derived(!required || (user ? hasPermission(user.permissions, required) : false));
 
 	let expiryNotified = false;
+	/** An explicit sign-out must not be re-branded as a deep-link redirect. */
+	let signingOut = $state(false);
+
+	/**
+	 * Sign-out revokes the refresh token first, then clears local state. A
+	 * failed revoke must never trap the user inside the app.
+	 */
+	async function signOut(): Promise<void> {
+		signingOut = true;
+		try {
+			await authApi.logout();
+		} finally {
+			clearSession();
+			await goto(resolve('/login' as Pathname), { replaceState: true });
+		}
+	}
 
 	// A refresh failure clears the session and lands here; say why once before
 	// the redirect to sign-in (Phase 0 §3, sessionExpired).
@@ -34,7 +51,8 @@
 	// Never paint the shell for a session that no longer exists. `ssr` is off,
 	// but `goto` still waits for initialisation to finish.
 	$effect(() => {
-		if (initializing || user) return;
+		if (initializing || signingOut) return;
+		if (user) return;
 		const target = resolve(
 			`/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}` as Pathname
 		);
@@ -57,7 +75,7 @@
 		<ForbiddenPage variant="forbidden" />
 	</div>
 {:else}
-	<AppShell>
+	<AppShell onSignOut={signOut}>
 		{#key page.url.pathname}
 			<div class="route-fade">{@render children()}</div>
 		{/key}

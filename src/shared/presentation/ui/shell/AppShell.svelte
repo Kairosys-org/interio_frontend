@@ -21,9 +21,11 @@
 	interface Props {
 		children: Snippet;
 		class?: string;
+		/** Injected by the route so token revocation stays outside the shell. */
+		onSignOut?: () => void;
 	}
 
-	let { children, class: className }: Props = $props();
+	let { children, class: className, onSignOut }: Props = $props();
 
 	const user = $derived($sessionStore.user);
 	const sections = $derived(visibleSections(NAV_SECTIONS, user?.permissions ?? []));
@@ -73,7 +75,10 @@
 	}
 
 	function signOut(): void {
-		// ORCHESTRATOR: call authApi.logout() before clearing.
+		if (onSignOut) {
+			onSignOut();
+			return;
+		}
 		clearSession();
 		void goto(resolve('/login' as Pathname));
 	}

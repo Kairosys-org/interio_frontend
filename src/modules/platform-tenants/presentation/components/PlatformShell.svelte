@@ -24,9 +24,11 @@
 	 */
 	interface Props {
 		children: Snippet;
+		/** Injected by the route so revocation stays outside the shell. */
+		onSignOut?: () => void;
 	}
 
-	let { children }: Props = $props();
+	let { children, onSignOut }: Props = $props();
 
 	interface PlatformNavItem {
 		label: string;
@@ -61,7 +63,10 @@
 			label: 'Sign out',
 			danger: true,
 			onSelect: () => {
-				// ORCHESTRATOR: call authApi.logout() before clearing.
+				if (onSignOut) {
+					onSignOut();
+					return;
+				}
 				clearSession();
 				void goto(resolve('/login'));
 			}
