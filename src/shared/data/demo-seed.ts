@@ -140,12 +140,24 @@ function user(
 	};
 }
 
+/** Extra surveyors so project assignment and the demo seed have a real pool. */
+const EXTRA_SURVEYORS: ReadonlyArray<{ key: string; email: string; name: string }> = [
+	{ key: 'surveyor-2', email: 'liam.oconnor@opulentinteriors.co.uk', name: "Liam O'Connor" },
+	{ key: 'surveyor-3', email: 'mei.tan@opulentinteriors.co.uk', name: 'Mei Tan' },
+	{ key: 'surveyor-4', email: 'noah.adeyemi@opulentinteriors.co.uk', name: 'Noah Adeyemi' },
+	{ key: 'surveyor-5', email: 'sofia.marchetti@opulentinteriors.co.uk', name: 'Sofia Marchetti' },
+	{ key: 'surveyor-6', email: 'harriet.wells@opulentinteriors.co.uk', name: 'Harriet Wells' }
+];
+
 /** One user per canonical role in Opulent, plus the chooser and platform cases. */
 export const DEMO_USERS: readonly AppUserRecord[] = Object.freeze([
 	...ROLE_SEED.map((seed) =>
 		user(userId('opulent', seed.role), tenantId('opulent'), seed.email, seed.name, [seed.role], {
 			mfa: seed.mfa
 		})
+	),
+	...EXTRA_SURVEYORS.map((seed) =>
+		user(userId('opulent', seed.key), tenantId('opulent'), seed.email, seed.name, [ROLES.SURVEYOR])
 	),
 	user(
 		userId('opulent', 'ambiguous'),

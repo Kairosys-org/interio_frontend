@@ -4,7 +4,13 @@ export const COLLECTIONS = {
 	permissions: 'permissions',
 	userInvitations: 'user_invitations',
 	platformAuditEvents: 'platform_audit_events',
-	auditEvents: 'audit_events'
+	auditEvents: 'audit_events',
+	customers: 'customers',
+	properties: 'properties',
+	projects: 'projects',
+	projectUsers: 'project_users',
+	importBatches: 'import_batches',
+	importRows: 'import_rows'
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

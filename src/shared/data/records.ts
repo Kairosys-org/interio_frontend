@@ -1,3 +1,15 @@
+import type {
+	CustomerSource,
+	CustomerState,
+	ImportKind,
+	ImportOutcome,
+	ImportStatus,
+	ImportValidation,
+	PreferredChannel,
+	ProjectStatus,
+	ProjectType,
+	PropertyState
+} from '$shared/domain/record-states';
 import type { TenantRole } from '$shared/domain/roles';
 import type { TenantBrandingEnvelope, TenantStatus } from '$shared/domain/user';
 import type { Uuid } from '$shared/domain/uuid';
@@ -58,6 +70,113 @@ export interface UserInvitationRecord {
 	createdAt: string;
 	expiresAt: string;
 	acceptedAt: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 1 — records spine storage records (versioned by schema bump). */
+/* ------------------------------------------------------------------ */
+
+export interface CustomerRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	caption: string;
+	contactName: string | null;
+	email: string | null;
+	phone: string | null;
+	addressLine1: string | null;
+	addressLine2: string | null;
+	town: string | null;
+	postcode: string | null;
+	preferredChannel: PreferredChannel;
+	source: CustomerSource;
+	/** Reserved CRM seam; intentionally null until CRM tables exist. */
+	leadUuid: Uuid | null;
+	state: CustomerState;
+	/** Existing record this held row duplicates (R5), if any. */
+	dedupOfId: Uuid | null;
+	reviewNote: string | null;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: Uuid | null;
+	archivedAt: string | null;
+}
+
+export interface PropertyRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	customerId: Uuid;
+	addressLine1: string;
+	addressLine2: string | null;
+	town: string | null;
+	postcode: string | null;
+	accessNotes: string | null;
+	state: PropertyState;
+	dedupOfId: Uuid | null;
+	reviewNote: string | null;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: Uuid | null;
+	archivedAt: string | null;
+}
+
+export interface ProjectRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	customerId: Uuid;
+	propertyId: Uuid;
+	caption: string;
+	reference: string;
+	projectType: ProjectType;
+	status: ProjectStatus;
+	state: 'active' | 'archived' | 'pending_review' | 'cancelled';
+	dedupOfId: Uuid | null;
+	reviewNote: string | null;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: Uuid | null;
+	archivedAt: string | null;
+}
+
+export interface ProjectUserRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	projectId: Uuid;
+	userId: Uuid;
+	assignedAt: string;
+	assignedBy: Uuid | null;
+}
+
+export interface ImportBatchRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	kind: ImportKind;
+	status: ImportStatus;
+	fileName: string;
+	columnMap: Record<string, string>;
+	totalRows: number;
+	importedRows: number;
+	readyRows: number;
+	reviewRows: number;
+	rejectedRows: number;
+	createdAt: string;
+	updatedAt: string;
+	createdBy: Uuid | null;
+	committedAt: string | null;
+}
+
+export interface ImportRowRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	batchId: Uuid;
+	rowNo: number;
+	payload: Record<string, string>;
+	validation: ImportValidation;
+	/** Null until the batch is committed. */
+	outcome: ImportOutcome | null;
+	error: string | null;
+	entityType: string | null;
+	entityId: Uuid | null;
+	createdAt: string;
 }
 
 export type AuditScope = 'platform' | 'tenant';
