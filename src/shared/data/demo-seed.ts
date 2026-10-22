@@ -89,7 +89,12 @@ const ROLE_SEED: ReadonlyArray<{
 	name: string;
 	mfa?: boolean;
 }> = [
-	{ role: ROLES.SYSTEM_ADMIN, email: 'admin@opulentinteriors.co.uk', name: 'Priya Nair', mfa: true },
+	{
+		role: ROLES.SYSTEM_ADMIN,
+		email: 'admin@opulentinteriors.co.uk',
+		name: 'Priya Nair',
+		mfa: true
+	},
 	{
 		role: ROLES.OWNER_MANAGEMENT,
 		email: 'owner@opulentinteriors.co.uk',
@@ -138,14 +143,9 @@ function user(
 /** One user per canonical role in Opulent, plus the chooser and platform cases. */
 export const DEMO_USERS: readonly AppUserRecord[] = Object.freeze([
 	...ROLE_SEED.map((seed) =>
-		user(
-			userId('opulent', seed.role),
-			tenantId('opulent'),
-			seed.email,
-			seed.name,
-			[seed.role],
-			{ mfa: seed.mfa }
-		)
+		user(userId('opulent', seed.role), tenantId('opulent'), seed.email, seed.name, [seed.role], {
+			mfa: seed.mfa
+		})
 	),
 	user(
 		userId('opulent', 'ambiguous'),
@@ -161,13 +161,9 @@ export const DEMO_USERS: readonly AppUserRecord[] = Object.freeze([
 		'Alex Morgan',
 		[ROLES.DESIGNER]
 	),
-	user(
-		userId('harbour', 'owner'),
-		tenantId('harbour'),
-		'owner@harbourfinch.co.uk',
-		'Ruth Finch',
-		[ROLES.OWNER_MANAGEMENT]
-	),
+	user(userId('harbour', 'owner'), tenantId('harbour'), 'owner@harbourfinch.co.uk', 'Ruth Finch', [
+		ROLES.OWNER_MANAGEMENT
+	]),
 	user(deterministicUuid('user:platform:staff'), null, 'platform@interio.app', 'Jordan Blake', [], {
 		platform: true
 	})

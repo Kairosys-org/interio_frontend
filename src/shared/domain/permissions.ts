@@ -169,7 +169,8 @@ export const ALL_KNOWN_PERMISSIONS: readonly string[] = Object.freeze([
 	...ALL_PLATFORM_PERMISSIONS
 ]);
 
-type Action = 'view' | 'create' | 'update' | 'approve' | 'release' | 'archive' | 'export' | 'change';
+type Action =
+	'view' | 'create' | 'update' | 'approve' | 'release' | 'archive' | 'export' | 'change';
 type Grants = Record<string, readonly Action[]>;
 
 /**
@@ -370,14 +371,12 @@ export function permissionsForRole(role: TenantRole): readonly Permission[] {
 /** Union of every role the user holds. */
 export function permissionsForRoles(roles: readonly TenantRole[]): Permission[] {
 	const granted = new Set<Permission>();
-	for (const role of roles) for (const permission of permissionsForRole(role)) granted.add(permission);
+	for (const role of roles)
+		for (const permission of permissionsForRole(role)) granted.add(permission);
 	return [...granted];
 }
 
-export function hasPermission(
-	userPermissions: readonly string[],
-	permission: string
-): boolean {
+export function hasPermission(userPermissions: readonly string[], permission: string): boolean {
 	return userPermissions.includes(permission);
 }
 

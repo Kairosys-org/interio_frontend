@@ -14,9 +14,7 @@ describe('route permissions', () => {
 
 	it('matches exact routes first', () => {
 		expect(permissionForRoute('/activity')).toBe(PERMISSIONS.AUDIT_VIEW);
-		expect(permissionForRoute('/platform/tenants')).toBe(
-			PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW
-		);
+		expect(permissionForRoute('/platform/tenants')).toBe(PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW);
 	});
 
 	it('uses the longest matching prefix', () => {
@@ -41,7 +39,10 @@ describe('route permissions', () => {
 	});
 
 	it('keeps every mapped value in the known vocabulary', () => {
-		const known = new Set<string>([...Object.values(PERMISSIONS), ...Object.values(PLATFORM_PERMISSIONS)]);
+		const known = new Set<string>([
+			...Object.values(PERMISSIONS),
+			...Object.values(PLATFORM_PERMISSIONS)
+		]);
 		for (const requirement of Object.values(ROUTE_PERMISSIONS)) {
 			if (requirement !== null) expect(known.has(requirement)).toBe(true);
 		}

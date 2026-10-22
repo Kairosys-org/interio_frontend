@@ -33,7 +33,11 @@ function warn(message: string): void {
 function parseHex(hex: string): Rgb | null {
 	if (!HEX_PATTERN.test(hex)) return null;
 	let value = hex.slice(1);
-	if (value.length === 3) value = value.split('').map((character) => character + character).join('');
+	if (value.length === 3)
+		value = value
+			.split('')
+			.map((character) => character + character)
+			.join('');
 	const int = Number.parseInt(value, 16);
 	return { r: ((int >> 16) & 255) / 255, g: ((int >> 8) & 255) / 255, b: (int & 255) / 255 };
 }
@@ -101,7 +105,9 @@ function toCss(rgb: Rgb): string {
 function readCanvas(): Rgb {
 	const fallback = '#fbfaf8';
 	if (typeof document === 'undefined') return parseHex(fallback) as Rgb;
-	const value = getComputedStyle(document.documentElement).getPropertyValue('--color-bg-primary').trim();
+	const value = getComputedStyle(document.documentElement)
+		.getPropertyValue('--color-bg-primary')
+		.trim();
 	return parseHex(value) ?? (parseHex(fallback) as Rgb);
 }
 

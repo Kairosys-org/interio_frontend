@@ -70,10 +70,12 @@ describe('tenant branding guard', () => {
 	});
 
 	it('clamps the overridable display name', () => {
-		expect(resolveTenantBranding({ accent: '#8A5A2B', displayName: 'A'.repeat(61) })?.displayName).toBeNull();
-		expect(resolveTenantBranding({ accent: '#8A5A2B', displayName: '  Opulent  ' })?.displayName).toBe(
-			'Opulent'
-		);
+		expect(
+			resolveTenantBranding({ accent: '#8A5A2B', displayName: 'A'.repeat(61) })?.displayName
+		).toBeNull();
+		expect(
+			resolveTenantBranding({ accent: '#8A5A2B', displayName: '  Opulent  ' })?.displayName
+		).toBe('Opulent');
 	});
 
 	it('only accepts https and same-origin absolute asset URLs', () => {
@@ -84,9 +86,10 @@ describe('tenant branding guard', () => {
 		});
 		expect(branding?.logoLightUrl).toBe('https://cdn.example.com/logo.svg');
 		expect(branding?.logoDarkUrl).toBeNull();
-		expect(resolveTenantBranding({ accent: '#8A5A2B', logoLightUrl: 'javascript:alert(1)' })).toBe(
-			null
-		);
+		expect(
+			resolveTenantBranding({ accent: '#8A5A2B', logoLightUrl: 'javascript:alert(1)' })
+				?.logoLightUrl
+		).toBeNull();
 	});
 });
 

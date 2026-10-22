@@ -1,11 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-	ACCOUNTS,
-	expectNoHorizontalOverflow,
-	expectOneH1,
-	signIn,
-	watchConsole
-} from './helpers';
+import { ACCOUNTS, expectNoHorizontalOverflow, expectOneH1, signIn, watchConsole } from './helpers';
 
 const WIDTHS = [320, 390, 768, 1024, 1280, 1920] as const;
 
@@ -60,9 +54,7 @@ test.describe('shell', () => {
 					return {
 						tag: element.tagName.toLowerCase(),
 						label:
-							element.getAttribute('aria-label') ??
-							element.textContent?.trim().slice(0, 40) ??
-							'',
+							element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 40) ?? '',
 						width: Math.round(box.width),
 						height: Math.round(box.height)
 					};

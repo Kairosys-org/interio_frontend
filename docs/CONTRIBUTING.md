@@ -61,13 +61,13 @@ the docs match the code.
 
 ## Do and don't
 
-| Do                                            | Don't                                      |
-| --------------------------------------------- | ------------------------------------------ |
-| Read the governing docs first                  | Rely on memory or summaries                |
-| Use `DESIGN.md` tokens only                    | Add colours, sizes, durations or shadows   |
-| Call the feature `data/api.ts`                 | Import mocks/adapters or call `fetch` in UI |
-| Write Svelte 5 runes                           | Use Svelte 4 syntax                        |
-| Test in a real headless browser                | Claim a fix without a screenshot           |
-| Use UUIDs and deterministic seeds              | Use numeric ids or random seed data        |
-| Commit small, push often, straight to `main`   | Open a PR, force push, `git add -A`        |
-| Run the full pnpm gate last                    | Fake, skip or weaken the gate              |
+| Do                                           | Don't                                       |
+| -------------------------------------------- | ------------------------------------------- |
+| Read the governing docs first                | Rely on memory or summaries                 |
+| Use `DESIGN.md` tokens only                  | Add colours, sizes, durations or shadows    |
+| Call the feature `data/api.ts`               | Import mocks/adapters or call `fetch` in UI |
+| Write Svelte 5 runes                         | Use Svelte 4 syntax                         |
+| Test in a real headless browser              | Claim a fix without a screenshot            |
+| Use UUIDs and deterministic seeds            | Use numeric ids or random seed data         |
+| Commit small, push often, straight to `main` | Open a PR, force push, `git add -A`         |
+| Run the full pnpm gate last                  | Fake, skip or weaken the gate               |

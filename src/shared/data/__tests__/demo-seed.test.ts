@@ -49,7 +49,8 @@ describe('demo seed', () => {
 			expect(user.roles.length).toBeGreaterThan(0);
 			expect(user.permissions.length).toBeGreaterThan(0);
 			const expected = new Set(user.roles.flatMap((role) => ROLE_PERMISSIONS[role]));
-			for (const permission of user.permissions) expect(expected.has(permission as never)).toBe(true);
+			for (const permission of user.permissions)
+				expect(expected.has(permission as never)).toBe(true);
 		}
 	});
 
@@ -58,7 +59,9 @@ describe('demo seed', () => {
 		expect(staff).toHaveLength(1);
 		expect(staff[0].tenantId).toBeNull();
 		expect(staff[0].roles).toHaveLength(0);
-		expect(staff[0].permissions.every((permission) => permission.startsWith('platform.'))).toBe(true);
+		expect(staff[0].permissions.every((permission) => permission.startsWith('platform.'))).toBe(
+			true
+		);
 	});
 
 	it('keeps the ambiguous email in two workspaces', () => {

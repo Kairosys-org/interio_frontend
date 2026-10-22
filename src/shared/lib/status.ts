@@ -181,7 +181,10 @@ const STATE_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
 
 /** Sentence-case label for any machine state; never ALL CAPS. */
 export function stateLabel(state: string): string {
-	const normalised = state.trim().replace(/[\s-]+/g, '_').toLowerCase();
+	const normalised = state
+		.trim()
+		.replace(/[\s-]+/g, '_')
+		.toLowerCase();
 	if (normalised.length === 0) return '';
 
 	const override = STATE_LABEL_OVERRIDES[normalised];
