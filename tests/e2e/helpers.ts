@@ -25,7 +25,10 @@ export async function fillCredentials(
 	password: string = DEMO_PASSWORD
 ): Promise<void> {
 	await page.getByLabel(/email/i).first().fill(email);
-	await page.getByLabel(/^password$/i).first().fill(password);
+	await page
+		.getByLabel(/^password/i)
+		.first()
+		.fill(password);
 	await page.getByRole('button', { name: /^sign in$/i }).click();
 }
 

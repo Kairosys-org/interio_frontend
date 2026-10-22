@@ -28,7 +28,7 @@ test.describe('platform console', () => {
 		await page.getByRole('button', { name: /new tenant/i }).click();
 
 		await page.getByLabel(/legal name/i).fill('Test Joinery Ltd');
-		await page.getByLabel(/^slug$/i).fill('test-joinery');
+		await page.getByLabel(/^slug/i).fill('test-joinery');
 		await page.getByLabel(/admin email/i).fill('admin@testjoinery.co.uk');
 		await page.getByRole('button', { name: /create tenant/i }).click();
 
@@ -36,8 +36,14 @@ test.describe('platform console', () => {
 		await expect(page.getByText('Test Joinery Ltd').first()).toBeVisible();
 
 		await page.goto('/platform/tenants');
-		await page.getByRole('link', { name: /test joinery/i }).first().click();
-		await page.getByRole('button', { name: /suspend tenant/i }).first().click();
+		await page
+			.getByRole('link', { name: /test joinery/i })
+			.first()
+			.click();
+		await page
+			.getByRole('button', { name: /suspend tenant/i })
+			.first()
+			.click();
 
 		const dialog = page.getByRole('dialog');
 		await dialog.getByLabel(/reason/i).fill('Playwright verification');

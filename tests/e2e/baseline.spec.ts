@@ -38,6 +38,10 @@ async function capture(page: Page, name: string): Promise<void> {
 	}
 }
 
+// Ten full-page screenshots per page (five widths × two themes). The default
+// 30 s budget is too tight for the public-pages pass on a loaded machine.
+test.setTimeout(120_000);
+
 test.describe.configure({ mode: 'serial' });
 
 test('baseline: public pages', async ({ browser }) => {

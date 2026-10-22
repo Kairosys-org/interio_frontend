@@ -6,7 +6,6 @@ import {
 	expectOneH1,
 	fillCredentials,
 	signIn,
-	submitMfaIfAsked,
 	watchConsole
 } from './helpers';
 
@@ -74,8 +73,8 @@ test.describe('authentication', () => {
 		await expectOneH1(page);
 		await expect(page.getByText(/opulent/i).first()).toBeVisible();
 
-		await page.getByLabel(/display name/i).fill('Imogen Clarke');
-		await page.getByLabel(/^password$/i).fill('Interio!2026');
+		await page.getByLabel(/full name/i).fill('Imogen Clarke');
+		await page.getByLabel(/^password/i).fill('Interio!2026');
 		await page.getByLabel(/confirm password/i).fill('Interio!2026');
 		await page.getByRole('button', { name: /accept invitation/i }).click();
 
@@ -89,7 +88,16 @@ test.describe('authentication', () => {
 		await expectOneH1(page);
 		await expect(page.getByRole('heading', { level: 1 })).toContainText(/does not exist/i);
 		await expectNoHorizontalOverflow(page);
-		expect(problems).toEqual([]);
+
+		// A 404 is the expected outcome here: the browser logs the failed document
+		// request and SvelteKit logs the thrown not-found error. Every other
+		// console error still fails the test.
+		const unexpected = problems.filter(
+			(problem) =>
+				!/status of 404 \(Not Found\)/.test(problem) &&
+				!/Not found: \/this-route-does-not-exist/.test(problem)
+		);
+		expect(unexpected).toEqual([]);
 	});
 
 	test('signing in twice does not double-submit', async ({ page }) => {
@@ -99,5 +107,29 @@ test.describe('authentication', () => {
 
 		await page.goto('/login');
 		await expect(page).toHaveURL(/\/dashboard$/);
+	});
+
+	test('a deep link returns after sign-in and sign-out revokes the session', async ({ page }) => {
+		await page.goto('/dashboard');
+		await expect(page).toHaveURL(/\/login\?redirect=%2Fdashboard/);
+
+		await fillCredentials(page, ACCOUNTS.sales);
+		await expect(page).toHaveURL(/\/dashboard$/);
+
+		await page.getByRole('button', { name: 'Account' }).click();
+		await page.getByRole('menuitem', { name: /sign out/i }).click();
+		await expect(page).toHaveURL(/\/login$/);
+
+		// The access and refresh tokens are gone, so the guard sends the deep
+		// link back to sign-in instead of painting the shell.
+		await page.goto('/dashboard');
+		await expect(page).toHaveURL(/\/login/);
+	});
+
+	test('the 403 page explains the missing permission', async ({ page }) => {
+		await page.goto('/403');
+		await expectOneH1(page);
+		await expect(page.getByRole('heading', { level: 1 })).toContainText(/do not have access/i);
+		await expectNoHorizontalOverflow(page);
 	});
 });
