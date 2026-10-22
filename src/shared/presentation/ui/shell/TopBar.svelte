@@ -99,9 +99,9 @@
 				<a
 					href={resolve('/dashboard')}
 					aria-label="{brandName} — home"
-					class="block truncate rounded-sm text-headline tracking-tight text-ink"
+					class="flex min-h-target items-center rounded-sm text-headline tracking-tight text-ink"
 				>
-					{brandName}
+					<span class="block min-w-0 truncate">{brandName}</span>
 				</a>
 				{#if title}
 					<span class="block truncate text-subheadline text-ink-secondary lg:hidden">

@@ -43,7 +43,8 @@
 	const errorId = $derived(`${fieldId}-error`);
 
 	const describedBy = $derived(
-		[hint ? hintId : '', error ? errorId : ''].filter((part) => part !== '').join(' ') || undefined
+		[hint && !error ? hintId : '', error ? errorId : ''].filter((part) => part !== '').join(' ') ||
+			undefined
 	);
 </script>
 
@@ -103,7 +104,7 @@
 		{/each}
 	</div>
 
-	{#if hint}
+	{#if hint && !error}
 		<p id={hintId} class="text-footnote text-ink-secondary">{hint}</p>
 	{/if}
 

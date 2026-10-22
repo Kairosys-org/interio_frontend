@@ -22,7 +22,10 @@
 
 <div class="flex min-h-dvh flex-col bg-canvas-grouped">
 	<header class="page-container flex justify-center pt-8">
-		<a href={resolve('/login')} class="wordmark text-headline text-ink">Interio</a>
+		<a
+			href={resolve('/login')}
+			class="wordmark inline-flex min-h-target items-center text-headline text-ink">Interio</a
+		>
 	</header>
 
 	<main

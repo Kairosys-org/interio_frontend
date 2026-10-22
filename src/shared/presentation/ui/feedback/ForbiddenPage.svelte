@@ -88,7 +88,12 @@
 	<div class="mx-auto flex max-w-content-reading flex-col items-center gap-4">
 		<Icon size={32} aria-hidden="true" class="text-ink-tertiary" />
 
-		<h1 id={headingId} bind:this={headingEl} tabindex="-1" class="text-large-title text-ink">
+		<h1
+			id={headingId}
+			bind:this={headingEl}
+			tabindex="-1"
+			class="text-large-title text-ink focus-visible:outline-none"
+		>
 			{heading}
 		</h1>
 

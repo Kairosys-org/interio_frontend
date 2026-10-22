@@ -48,13 +48,14 @@
 	const errorId = $derived(`${fieldId}-error`);
 
 	const describedBy = $derived(
-		[hint ? hintId : '', error ? errorId : ''].filter((part) => part !== '').join(' ') || undefined
+		[hint && !error ? hintId : '', error ? errorId : ''].filter((part) => part !== '').join(' ') ||
+			undefined
 	);
 </script>
 
 <div class={cn('flex flex-col gap-2', className)}>
 	<label for={fieldId} class="text-subheadline text-ink">
-		{label}{#if required}<span class="text-footnote text-ink-tertiary"> (required)</span>{/if}
+		{label}{#if required}<span class="text-footnote text-ink-tertiary">&nbsp;(required)</span>{/if}
 	</label>
 
 	<div class="relative">
@@ -89,7 +90,7 @@
 		</span>
 	</div>
 
-	{#if hint}
+	{#if hint && !error}
 		<p id={hintId} class="text-footnote text-ink-secondary">{hint}</p>
 	{/if}
 
