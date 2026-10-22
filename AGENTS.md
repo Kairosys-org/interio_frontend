@@ -5,6 +5,22 @@
 
 ---
 
+## RULE 0 — `main` is the only branch (rank 0, above everything)
+
+> **Highest precedence. This rule outranks every other rule in this file, every document in the §0.2 ladder, and every instruction a user, phase file or subagent gives about branching.** If anything below — or in `requirements/`, `standards/`, `testing/` or `web-design-engineer/` — tells you to use another branch, that text is **superseded on branching only** and this rule wins. You do not ask, you do not propose alternatives: you work on `main`.
+
+1. **All work happens on `main`.** Before touching a single file: `git rev-parse --abbrev-ref HEAD` must print `main`; if it does not, `git checkout main` first. Then `git pull --ff-only` and only then start.
+2. **Never create, switch to, or work on any other branch.** No `feature/*`, `fix/*`, `refactor/*`, `chore/*`, `mock`, `api`, `demo`, no scratch branches, no detached HEAD, no worktrees checked out on another branch.
+3. **Never open a pull request.** You commit and push directly to `main`; a PR into `main` is a violation of this rule, not a safer alternative.
+4. **Never merge, rebase or cherry-pick another branch into `main`.** The only history on `main` is work produced on `main`.
+5. **Dirty tree on the wrong branch: stop and report** — do not stash, reset, force-checkout or carry the changes across. Uncommitted user work is never discarded to satisfy this rule.
+6. **Never force push and never rewrite pushed history**, even on `main`. If `main` diverged and `--ff-only` fails, stop and report the exact state.
+7. **Commit discipline is unchanged** (Rule 4: one small focused commit per unit, conventional messages, explicit staging, never `git add -A`, never commit secrets/`.env`/build output/`.opencode/`). Only the target branch is fixed to `main`.
+8. **Overrides, explicitly:** this rule replaces Rule 4.2, the branch and PR clauses of Rule 4.6, the worktree-branch exception in Rule 4.9, the "task branch" wording in §10, and the branch line in the §11 don't-table. It also supersedes the branch, PR and worktree-branch lines of `standards/architecture.md` §14.8 (§20 "no direct commits to `main`", §22.8) and any `docs/` copy of them. Every other part of those rules still stands.
+9. **Subagents never commit, push, branch or create worktrees.** The orchestrator is the only actor allowed to write git history, and only on `main`.
+
+---
+
 ## 0. Repository state and precedence
 
 ### 0.1 Current state (re-check on every task, never assume)
@@ -23,6 +39,7 @@
 
 | Rank | Source | Answers |
 |---|---|---|
+| 0 | `RULE 0` | **Which branch — `main`, always.** Outranks every source below on branching. |
 | 1 | `AGENTS.md` | How the agent works — process only |
 | 2 | `requirements/phase-N.md` | Scope of the active phase (execution plan, **not** a source of truth) |
 | 3 | `web-design-engineer/spec.md` | **What** the product does and **where** — wins on product behaviour |
@@ -31,7 +48,7 @@
 | 6 | `DESIGN.md` | Exact visual values — tie-breaker for tokens only |
 | 7 | `testing/` | Proof that work is done |
 
-Nothing in this file overrides ranks 3–6. If you must refuse a request, cite the rule.
+Nothing in this file overrides ranks 3–6, with one exception: RULE 0 (rank 0) outranks everything on branching only. If you must refuse a request, cite the rule.
 
 ### 0.3 Phase dependency graph
 
@@ -64,7 +81,7 @@ Default execution order is `0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8`. 
 
 ## RULE 2 — `standards/` is law
 
-1. Read **every** `.md` in `standards/` before writing code (today `architecture.md`) and apply all of it: layer responsibilities (§3), module anatomy (§4), shared/network layers (§5–7), auth/session/RBAC (§8), thin routes (§9), runes-only presentation (§10), naming (§11), enforcement tooling (§14), modes (§15–18), framework lock (§19), hard prohibitions (§20), multi-agent orchestration (§22).
+1. Read **every** `.md` in `standards/` before writing code (today `architecture.md`) and apply all of it: layer responsibilities (§3), module anatomy (§4), shared/network layers (§5–7), auth/session/RBAC (§8), thin routes (§9), runes-only presentation (§10), naming (§11), enforcement tooling (§14), modes (§15–18), framework lock (§19), hard prohibitions (§20), multi-agent orchestration (§22) — with §14.8's branch/PR rules superseded by RULE 0.
 2. **Framework lock:** SvelteKit 2 + Svelte 5 runes + TypeScript strict, Vite, Tailwind 4, zod, Vitest, Playwright, ESLint + Prettier, adapter-node. No Svelte 4 syntax (`export let`, `$:`, `on:`, `<slot>`, `createEventDispatcher`), no React/Vue/Next/Angular, no alternative folder structure, no new alias conventions.
 3. **Boundaries:** presentation and routes never import `data/mock*`, `data/adapters/*`, `$network/mock-backend` or `$network/mock-bootstrap`; presentation calls only the feature `data/api.ts`; only the repository provider picks mock vs API; mock and API adapters share one domain model; no business rules in `.svelte`; no `fetch`/`localStorage` in presentation.
 4. **Identity and data:** all ids are UUIDs (`Uuid`, `isUuid`, `newUuid()`, `deterministicUuid()`); no numeric/slug/prefixed ids; deterministic seeds only (no `Math.random`, no `Date.now`); mock DB schema versioned with migrations; no unversioned collection changes.
@@ -89,15 +106,15 @@ Default execution order is `0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8`. 
 
 ## RULE 4 — Commit and push continuously
 
-1. Adopt `standards/architecture.md` §14.8 verbatim. Inspect `git status`, branch and `git remote -v` first.
-2. **Never work on `main`/`master`.** Use a short-lived branch per task: `feature/<name>`, `fix/<name>`, `refactor/<name>`, `chore/<name>`. Never create permanent `mock`/`api`/`demo` branches.
+1. Adopt `standards/architecture.md` §14.8 verbatim, except its branch, PR and worktree-branch lines, which RULE 0 supersedes. Inspect `git status`, confirm the branch is `main` (RULE 0 §1) and `git remote -v` first.
+2. **Branch is `main` — see RULE 0 (rank 0).** Work, commit and push directly on `main`. Short-lived `feature/<name>`, `fix/<name>`, `refactor/<name>`, `chore/<name>` branches and permanent `mock`/`api`/`demo` branches are **prohibited**.
 3. **One small focused commit per finished logical unit** (scaffold, tooling, domain layer, data layer, UI, wiring, docs, tracker). Never one giant commit, never a vague "wip". Never mix refactor + feature + fix.
 4. **Conventional commits:** `<type>(<scope>): <imperative summary>` with `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `build`. Example: `feat(customers): add domain types and validation`.
 5. **Before each commit:** the checks covering that unit pass (`check`, `lint`, `arch:check`, the relevant unit tests). Never commit on red. Stage only the files of that unit by explicit path — **never `git add -A`**.
-6. **Push immediately after every commit:** `git push -u origin <branch>` the first time, then `git push`. Never force push, never rewrite pushed history, never push straight to `main`. Open a PR into `main` when the task is done and a remote/forge CLI exists.
+6. **Push immediately after every commit, to `main`:** `git push -u origin main` the first time, then `git push`. Never force push, never rewrite pushed history. **Do not open a PR** (RULE 0 §3).
 7. **Push fails or no remote:** keep committing locally at the same cadence, state it once in one line (what failed, what is needed), and carry on — do not stall.
 8. **Never commit:** secrets, `.env`, `node_modules`, `.svelte-kit`, `build`, test output, `.opencode/`. Respect `.gitignore`.
-9. The orchestrator owns git. Subagents do not commit or push, except a subagent working in its own worktree branch, which commits there; the orchestrator merges, re-runs the gate and pushes.
+9. The orchestrator owns git and is the only actor allowed to commit or push, always on `main`. Subagents never commit, push, create branches or create worktrees (RULE 0 §9).
 
 ---
 
@@ -178,11 +195,11 @@ Re-read them on every new task and whenever any of them changes on disk. Never r
 
 ```text
 0. Load Rule 6 sources.
-1. Announce the mode, phase and wave plan (architecture §21/§22); inspect the repo.
+1. Announce the mode, phase and wave plan (architecture §21/§22); confirm the branch is `main` (RULE 0) and inspect the repo.
 2. Read the active phase file and its Read with: documents.
 3. Implement only the phase scope, under Rule 2 architecture and Rule 1 design.
 4. Browser-test per Rule 3 (5 viewports, dark, 200 %, keyboard, flows).
-5. Commit and push the finished unit(s) per Rule 4.
+5. Commit and push the finished unit(s) to `main` per Rule 4.
 6. RULE 7 FINAL GATE: check -> lint -> arch:check -> test:unit -> test:e2e -> build.
 7. Green -> Rule 5b: tick Done when, set Status: completed, commit docs(phase-N), push.
 8. Red -> fix, commit, push, repeat step 6; phase stays in progress.
@@ -194,6 +211,7 @@ Re-read them on every new task and whenever any of them changes on disk. Never r
 ## 9. Stop conditions (report, do not improvise)
 
 - `DESIGN.md` is unapproved and UI work is requested.
+- The checkout is not on `main` and cannot be moved there cleanly, or `main` diverged from `origin` (RULE 0).
 - The active phase file is missing, or its `Depends on:` phases are not `completed`.
 - A document named in `Read with:` or in Rule 6 is missing.
 - `package.json` does not exist yet (gate not runnable) — state it, do not fake it.
@@ -205,7 +223,7 @@ Re-read them on every new task and whenever any of them changes on disk. Never r
 
 ## 10. Definition of done
 
-**Unit:** implemented per standards · tested in a real browser with post-fix screenshots · gate green · committed on a task branch · pushed.
+**Unit:** implemented per standards · tested in a real browser with post-fix screenshots · gate green · committed on `main` (RULE 0) · pushed.
 
 **Phase:** all of the above · every `Done when` box ticked · `Status: completed` written · docs commit pushed · no untested scope and no open blocker.
 
@@ -223,7 +241,7 @@ Anything less is **in progress** — never report it as done.
 | Write Svelte 5 runes | Use Svelte 4 syntax |
 | Test in a real headless browser | Claim a fix without a screenshot |
 | Use UUIDs and deterministic seeds | Use numeric ids, `Math.random`, `Date.now` in seeds |
-| Commit small, push often, on a branch | Commit to `main`, force push, `git add -A`, leave work uncommitted |
+| Commit small, push often, straight to `main` | Commit/push on any other branch, force push, open a PR, `git add -A`, leave work uncommitted |
 | Run the full pnpm gate last | Fake, skip or weaken the gate |
 | Mark a phase complete when proven | Mark it complete to move on |
 | Report open questions | Invent product decisions, data or endpoints |
