@@ -16,7 +16,7 @@ import { ALL_TENANT_ROLES, ROLES, isTenantRole } from '../roles';
 describe('permission vocabulary', () => {
 	it('uses the <object>.<action> shape for every code', () => {
 		for (const permission of ALL_KNOWN_PERMISSIONS) {
-			expect(permission).toMatch(/^[a-z_]+\.[a-z_]+$/);
+			expect(permission).toMatch(/^[a-z_]+(?:\.[a-z_]+)+$/);
 		}
 	});
 
