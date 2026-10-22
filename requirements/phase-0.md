@@ -1,6 +1,6 @@
 # Phase 0 — Foundation, shell, tenancy
 
-> **Status:** not started · created 2026-10-22
+> **Status:** completed · 2026-10-23 · gate green (check, lint, arch:check, unit, e2e, build)
 > **Depends on:** — (first phase) · **Unlocks:** 1–8
 > **Spec map:** `spec.md` Part 12 §1 "Phase 0 — Tenancy foundation" (frontend slice); Part 11 §1–§3 and §4.14 (login/invite); Part 2 §2.3–§2.5, §2.9; Part 6 §1–§3, §6; Part 10 §1–§3, §25 (contract only); Part 13 §4 (TEN), §7 (UI contract), C-06/C-07.
 > **Read with:** `spec.md` Part 2 §2.1–§2.12, Part 6 §1–§3 and §6, Part 10 §1–§3 and §25, Part 11 §1–§3 + §4.14 + §6, Part 13 §2/§4/§7; `web-design-engineer/ui-ux.md` in full; `DESIGN.md` in full (§2, §3, §4, §5, §6, §7, §9, §10.1, §11, §12, §14, §15, Appendix A/B); `standards/architecture.md` §0–§14 and §15 (Mode A), §19–§22; `testing/ui-ux-tester.md`; `testing/standards/basic-rules.md`.
@@ -205,19 +205,19 @@ Commit cadence (on `main`): scaffold → tooling → tokens/UI primitives → ne
 
 ## 8. Done when
 
-- [ ] `package.json` exists and every gate script is real: `check`, `lint`, `arch:check`, `test:unit`, `test:e2e`, `build`.
-- [ ] Full gate green in order: `pnpm check` → `pnpm lint` → `pnpm arch:check` → `pnpm test:unit -- --run` → `pnpm test:e2e` → `pnpm run build`.
-- [ ] `arch:check` reports `arch:check OK` with **0** violations; the boundary test and ESLint restriction fail on a deliberately bad import (proved once, reverted).
-- [ ] Login: email → password → MFA succeeds; wrong password shows an inline error; 10 failures in 15 min shows lockout; `login_success` / `login_failure` audit rows exist.
-- [ ] Workspace chooser appears only for an email that resolves to 0 or 2+ tenants; after login the tenant is fixed for the session; no tenant switcher exists.
-- [ ] Tenant branding (accent, logo, display name) applies after `/auth/me`; an unreadable accent falls back to brass; no brass flash on reload.
-- [ ] Route guard: signed out → `/login`; authenticated on `/login` → `/dashboard`; missing permission or disabled feature flag → `/403`; expired session → toast + login.
-- [ ] `/dashboard` shows only permitted section shortcuts from `NAV_SECTIONS`; no invented data, no dead links (items are added by later phases).
-- [ ] Two seeded tenants: no read or write crosses tenants in mock tests or browser flows.
-- [ ] Tokens: no raw hex/rgb/px font/arbitrary Tailwind value outside `tokens.css`; dark mode, `prefers-contrast: more`, reduced motion/transparency all work.
-- [ ] Every page checked at `320×720`, `390×844`, `768×1024`, `1280×720`, `1920×1080`, light + dark, 200 % text zoom: no horizontal overflow, targets ≥44×44, AA contrast, heading order, keyboard-only pass with visible focus, no console errors or failed own-asset requests.
-- [ ] Unit + e2e suites named in §5.4 pass; `docs/CONTRIBUTING.md` and the tracker exist and describe the real gate.
-- [ ] Everything committed and pushed to `main`; `requirements/phase-0.md` status flipped with the `docs(phase-0): mark phase complete` commit only after the gate is green.
+- [x] `package.json` exists and every gate script is real: `check`, `lint`, `arch:check`, `test:unit`, `test:e2e`, `build`.
+- [x] Full gate green in order: `pnpm check` → `pnpm lint` → `pnpm arch:check` → `pnpm test:unit -- --run` → `pnpm test:e2e` → `pnpm run build`.
+- [x] `arch:check` reports `arch:check OK` with **0** violations; the boundary test and ESLint restriction fail on a deliberately bad import (proved once, reverted).
+- [x] Login: email → password → MFA succeeds; wrong password shows an inline error; 10 failures in 15 min shows lockout; `login_success` / `login_failure` audit rows exist.
+- [x] Workspace chooser appears only for an email that resolves to 0 or 2+ tenants; after login the tenant is fixed for the session; no tenant switcher exists.
+- [x] Tenant branding (accent, logo, display name) applies after `/auth/me`; an unreadable accent falls back to brass; no brass flash on reload.
+- [x] Route guard: signed out → `/login`; authenticated on `/login` → `/dashboard`; missing permission or disabled feature flag → `/403`; expired session → toast + login.
+- [x] `/dashboard` shows only permitted section shortcuts from `NAV_SECTIONS`; no invented data, no dead links (items are added by later phases).
+- [x] Two seeded tenants: no read or write crosses tenants in mock tests or browser flows.
+- [x] Tokens: no raw hex/rgb/px font/arbitrary Tailwind value outside `tokens.css`; dark mode, `prefers-contrast: more`, reduced motion/transparency all work.
+- [x] Every page checked at `320×720`, `390×844`, `768×1024`, `1280×720`, `1920×1080`, light + dark, 200 % text zoom: no horizontal overflow, targets ≥44×44, AA contrast, heading order, keyboard-only pass with visible focus, no console errors or failed own-asset requests.
+- [x] Unit + e2e suites named in §5.4 pass; `docs/CONTRIBUTING.md` and the tracker exist and describe the real gate.
+- [x] Everything committed and pushed to `main`; `requirements/phase-0.md` status flipped with the `docs(phase-0): mark phase complete` commit only after the gate is green.
 
 ---
 
