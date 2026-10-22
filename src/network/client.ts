@@ -37,7 +37,9 @@ export function normalizeApiError(error: unknown): ApiError {
 				: 'The request failed unexpectedly. Please try again.',
 		requestId: nextRequestId(),
 		details:
-			error instanceof Error ? { name: error.name, message: error.message } : { value: String(error) }
+			error instanceof Error
+				? { name: error.name, message: error.message }
+				: { value: String(error) }
 	});
 }
 

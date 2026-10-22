@@ -33,7 +33,13 @@ export default defineConfig({
 					include: ['src/**/*.svelte.test.ts'],
 					browser: {
 						enabled: true,
-						provider: playwright(),
+						provider: playwright({
+							launchOptions: {
+								// CI containers ship a small /dev/shm; chromium dies
+								// mid-navigation without this.
+								args: ['--disable-dev-shm-usage']
+							}
+						}),
 						instances: [{ browser: 'chromium' }]
 					}
 				}

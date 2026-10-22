@@ -29,7 +29,11 @@ export default tseslint.config(
 		}
 	},
 	{
-		files: ['src/routes/**/*.{ts,svelte}', 'src/lib/**/*.{ts,svelte}', 'src/modules/**/presentation/**/*.{ts,svelte}'],
+		files: [
+			'src/routes/**/*.{ts,svelte}',
+			'src/lib/**/*.{ts,svelte}',
+			'src/modules/**/presentation/**/*.{ts,svelte}'
+		],
 		rules: {
 			'no-restricted-imports': [
 				'error',

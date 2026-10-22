@@ -7,3 +7,12 @@ playwright-report
 .playwright-cli
 .opencode
 pnpm-lock.yaml
+
+# Governing documents are not formatted by the code gate.
+AGENTS.md
+DESIGN.md
+requirements/
+standards/
+testing/
+web-design-engineer/
+README.md
