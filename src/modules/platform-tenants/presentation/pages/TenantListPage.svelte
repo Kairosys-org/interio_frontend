@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -69,11 +68,14 @@
 		const target = suffix.length > 0 ? `/platform/tenants?${suffix}` : '/platform/tenants';
 		if (target === lastUrl) return;
 		lastUrl = target;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			suffix.length > 0 ? resolve(`/platform/tenants?${suffix}`) : resolve('/platform/tenants'),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	}
 
 	async function loadPage(

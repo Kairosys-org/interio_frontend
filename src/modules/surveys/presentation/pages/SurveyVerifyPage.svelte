@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, ShieldCheck } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -134,7 +133,7 @@
 		{ label: 'Surveys', href: resolve('/surveys') },
 		{
 			label: survey?.caption ?? 'Survey',
-			href: survey ? resolve(`/surveys/${survey.id}` as Pathname) : undefined
+			href: survey ? resolve(`/surveys/${survey.id}`) : undefined
 		},
 		{ label: 'Verification' }
 	]);
@@ -262,7 +261,7 @@
 			transitionOpen = false;
 			await refresh();
 			if (action === 'reject') {
-				await goto(resolve(`/surveys/${current.id}` as Pathname));
+				await goto(resolve(`/surveys/${current.id}`));
 			}
 		} catch (caught) {
 			transitionError = isApiError(caught)

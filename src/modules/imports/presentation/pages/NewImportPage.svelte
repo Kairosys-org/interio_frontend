@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { PERMISSIONS } from '$shared/domain/permissions';
@@ -266,7 +265,7 @@
 				columnMap: checked.data.columnMap
 			});
 			toast.success('Import staged.');
-			await goto(resolve(`/imports/${batch.id}` as Pathname));
+			await goto(resolve(`/imports/${batch.id}`));
 		} catch (caught) {
 			submitError = isApiError(caught)
 				? caught.message

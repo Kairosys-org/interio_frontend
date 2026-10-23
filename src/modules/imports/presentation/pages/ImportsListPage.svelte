@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { isApiError } from '$network/errors';
 	import { PERMISSIONS } from '$shared/domain/permissions';
@@ -100,11 +99,14 @@
 	function applyUrl(next: ListUrlState): void {
 		const target = buildHref(next);
 		if (target === `${page.url.pathname}${page.url.search}`) return;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			target.includes('?') ? resolve(target as `/imports?${string}`) : resolve('/imports'),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	}
 
 	const urlState = $derived.by(() => readUrl(page.url.searchParams));
@@ -274,7 +276,7 @@
 			{#snippet cell({ row, column }: { row: ImportBatch; column: TableColumn })}
 				{#if column.key === 'file'}
 					<EntityLink
-						href={resolve(`/imports/${row.id}` as Pathname)}
+						href={resolve(`/imports/${row.id}`)}
 						class="inline-flex min-h-target items-center"
 					>
 						{row.fileName}

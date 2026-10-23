@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import {
 		Building2,
 		ChevronDown,
@@ -32,7 +31,7 @@
 
 	interface PlatformNavItem {
 		label: string;
-		href: Pathname;
+		href: string;
 		icon: Component;
 	}
 
@@ -141,7 +140,7 @@
 			{@const Icon = item.icon}
 			<li>
 				<a
-					href={resolve(item.href)}
+					href={resolve(item.href as '/platform/tenants')}
 					aria-current={active ? 'page' : undefined}
 					onclick={() => onNavigate?.()}
 					class={cn(

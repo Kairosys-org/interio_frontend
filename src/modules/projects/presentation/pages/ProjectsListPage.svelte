@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { Plus } from '@lucide/svelte';
 	import { isApiError } from '$network/errors';
 	import {
@@ -135,11 +134,14 @@
 	function applyUrl(next: ListUrlState): void {
 		const target = buildHref(next);
 		if (target === `${page.url.pathname}${page.url.search}`) return;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			target.includes('?') ? resolve(target as `/projects?${string}`) : resolve('/projects'),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	}
 
 	const urlState = $derived.by(() => readUrl(page.url.searchParams));
@@ -435,7 +437,7 @@
 			{#snippet cell({ row, column }: { row: ProjectListRow; column: TableColumn })}
 				{#if column.key === 'caption'}
 					<a
-						href={resolve(`/projects/${row.id}` as Pathname)}
+						href={resolve(`/projects/${row.id}`)}
 						class="inline-flex min-h-target flex-col justify-center rounded-sm"
 					>
 						<span class="text-callout break-words text-brand underline underline-offset-2">

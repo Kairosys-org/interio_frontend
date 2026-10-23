@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { env } from '$shared/application/env';
 	import { session, sessionStore } from '$shared/application/session';
 	import { DEMO_PASSWORD } from '$shared/data/demo-seed';
@@ -41,7 +40,7 @@
 		session.setUser(user);
 		const fallback = user.platform ? resolve('/platform/tenants') : resolve('/dashboard');
 		const next = safeRedirect(redirectTo);
-		void goto(next ? resolve(next as Pathname) : fallback, { replaceState: true });
+		void goto(next ? resolve(next as '/dashboard') : fallback, { replaceState: true });
 	}
 
 	function handleLoginResult(result: LoginResult, submittedEmail: string): void {

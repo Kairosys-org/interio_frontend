@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import type { Snippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { authApi } from '$modules/auth/data/api';
@@ -33,7 +32,7 @@
 			await authApi.logout();
 		} finally {
 			clearSession();
-			await goto(resolve('/login' as Pathname), { replaceState: true });
+			await goto(resolve('/login'), { replaceState: true });
 		}
 	}
 
@@ -54,7 +53,7 @@
 		if (initializing || signingOut) return;
 		if (user) return;
 		const target = resolve(
-			`/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}` as Pathname
+			`/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}`
 		);
 		void goto(target, { replaceState: true });
 	});

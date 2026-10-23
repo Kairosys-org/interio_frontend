@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { sessionStore } from '$shared/application/session';
@@ -159,13 +158,13 @@
 	});
 
 	const customerHref = $derived(
-		hub?.customer ? resolve(`/customers/${hub.customer.id}` as Pathname) : undefined
+		hub?.customer ? resolve(`/customers/${hub.customer.id}`) : undefined
 	);
 	const propertyHref = $derived(
-		hub?.property ? resolve(`/properties/${hub.property.id}` as Pathname) : undefined
+		hub?.property ? resolve(`/properties/${hub.property.id}`) : undefined
 	);
 	const dedupHref = $derived(
-		hub?.project.dedupOfId ? resolve(`/projects/${hub.project.dedupOfId}` as Pathname) : undefined
+		hub?.project.dedupOfId ? resolve(`/projects/${hub.project.dedupOfId}`) : undefined
 	);
 
 	const detailItems = $derived.by(() => {
@@ -227,12 +226,14 @@
 		if (current === 'overview') params.delete('tab');
 		else params.set('tab', current);
 		const suffix = params.toString();
-		const target = suffix.length > 0 ? `/projects/${id}?${suffix}` : `/projects/${id}`;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			suffix.length > 0 ? resolve(`/projects/${id}?${suffix}`) : resolve(`/projects/${id}`),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	});
 
 	$effect(() => {
@@ -420,7 +421,7 @@
 	function handleReviewed(project: Project): void {
 		dedupOpen = false;
 		if (project.state === 'cancelled' && project.dedupOfId) {
-			void goto(resolve(`/projects/${project.dedupOfId}` as Pathname));
+			void goto(resolve(`/projects/${project.dedupOfId}`));
 			return;
 		}
 		auditLoadedFor = null;

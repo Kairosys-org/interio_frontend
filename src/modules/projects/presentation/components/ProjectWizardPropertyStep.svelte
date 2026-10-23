@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { propertiesApi } from '$modules/properties/data/api';
 	import type { PropertyListRow } from '$modules/properties/domain/types';
 	import { isApiError } from '$network/errors';
@@ -50,7 +49,7 @@
 		return list;
 	});
 
-	const newPropertyHref = resolve('/properties/new' as string as Pathname);
+	const newPropertyHref = resolve('/properties/new');
 
 	let loadedCustomerId: string | null = null;
 

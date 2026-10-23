@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { Ban, CircleAlert, SearchX, WifiOff } from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils';
@@ -119,14 +118,14 @@
 
 			{#if showRetry}
 				<a
-					href={resolve(backHref as Pathname)}
+					href={resolve(backHref as '/dashboard')}
 					class="inline-flex min-h-target min-w-target items-center justify-center rounded-md px-4 text-callout font-medium text-brand underline underline-offset-2"
 				>
 					{backLabel}
 				</a>
 			{:else}
 				<a
-					href={resolve(backHref as Pathname)}
+					href={resolve(backHref as '/dashboard')}
 					class="inline-flex min-h-target min-w-target items-center justify-center rounded-md bg-brand px-4 text-callout font-medium text-on-brand hover:bg-brand-hover"
 				>
 					{backLabel}

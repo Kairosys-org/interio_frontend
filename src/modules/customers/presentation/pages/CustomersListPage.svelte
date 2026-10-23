@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -132,7 +131,7 @@
 		const target = `/customers?${params.toString()}`;
 		if (target === lastUrl) return;
 		lastUrl = target;
-		void goto(resolve(target as Pathname), {
+		void goto(resolve(`/customers?${params.toString()}`), {
 			replaceState: true,
 			noScroll: true,
 			keepFocus: true
@@ -312,7 +311,7 @@
 
 {#snippet rowActions(row: CustomerListRow)}
 	<EntityLink
-		href={resolve(`/customers/${row.id}` as Pathname)}
+		href={resolve(`/customers/${row.id}`)}
 		class="inline-flex min-h-target min-w-target items-center justify-center"
 	>
 		Open

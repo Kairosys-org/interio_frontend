@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { customersApi } from '$modules/customers/data/api';
 	import type { CustomerListRow } from '$modules/customers/domain/types';
 	import { isApiError } from '$network/errors';
@@ -48,7 +47,7 @@
 		return list;
 	});
 
-	const newCustomerHref = resolve('/customers/new' as string as Pathname);
+	const newCustomerHref = resolve('/customers/new');
 
 	$effect(() => {
 		void load('');

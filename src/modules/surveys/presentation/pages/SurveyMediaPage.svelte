@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, RefreshCw } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -92,7 +91,7 @@
 		{ label: 'Surveys', href: resolve('/surveys') },
 		{
 			label: survey?.caption ?? 'Survey',
-			href: survey ? resolve(`/surveys/${survey.id}` as Pathname) : undefined
+			href: survey ? resolve(`/surveys/${survey.id}`) : undefined
 		},
 		{ label: 'Media' }
 	]);
@@ -387,9 +386,7 @@
 		description={`${loadedSurvey.caption} · ${loadedDetail.project.caption}`}
 	>
 		{#snippet actions()}
-			<EntityLink href={resolve(`/surveys/${loadedSurvey.id}` as Pathname)}>
-				Back to survey
-			</EntityLink>
+			<EntityLink href={resolve(`/surveys/${loadedSurvey.id}`)}>Back to survey</EntityLink>
 		{/snippet}
 	</PageHeader>
 

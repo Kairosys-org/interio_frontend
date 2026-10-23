@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import type { Snippet } from 'svelte';
 	import { authApi } from '$modules/auth/data/api';
 	import { clearSession, sessionStore } from '$shared/application/session';
@@ -35,7 +34,7 @@
 	$effect(() => {
 		if (initializing || signingOut) return;
 		if (user) return;
-		void goto(resolve(`/login?redirect=${encodeURIComponent(page.url.pathname)}` as Pathname), {
+		void goto(resolve(`/login?redirect=${encodeURIComponent(page.url.pathname)}`), {
 			replaceState: true
 		});
 	});
@@ -47,7 +46,7 @@
 			await authApi.logout();
 		} finally {
 			clearSession();
-			await goto(resolve('/login' as Pathname), { replaceState: true });
+			await goto(resolve('/login'), { replaceState: true });
 		}
 	}
 </script>

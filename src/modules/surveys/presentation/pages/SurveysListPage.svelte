@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -165,11 +164,14 @@
 	function applyUrl(next: ListUrlState): void {
 		const target = buildHref(next);
 		if (target === `${page.url.pathname}${page.url.search}`) return;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			target.includes('?') ? resolve(target as `/surveys?${string}`) : resolve('/surveys'),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	}
 
 	const urlState = $derived.by(() => readUrl(page.url.searchParams));
@@ -346,11 +348,11 @@
 
 	function handleSaved(saved: { id: string; caption: string }): void {
 		toast.success(`${saved.caption} created.`);
-		void goto(resolve(`/surveys/${saved.id}` as Pathname));
+		void goto(resolve(`/surveys/${saved.id}`));
 	}
 
 	function verifyHref(id: string): string {
-		return resolve(`/surveys/${id}/verify` as Pathname);
+		return resolve(`/surveys/${id}/verify`);
 	}
 </script>
 
@@ -372,7 +374,7 @@
 	{#if column.key === 'caption'}
 		<div class="flex min-w-0 flex-col gap-0.5">
 			<EntityLink
-				href={resolve(`/surveys/${row.id}` as Pathname)}
+				href={resolve(`/surveys/${row.id}`)}
 				class="inline-flex min-h-target items-center break-words"
 			>
 				{row.caption}
@@ -382,7 +384,7 @@
 	{:else if column.key === 'project'}
 		<div class="flex min-w-0 flex-col gap-0.5">
 			<EntityLink
-				href={resolve(`/projects/${row.projectId}` as Pathname)}
+				href={resolve(`/projects/${row.projectId}`)}
 				class="inline-flex min-h-target items-center break-words"
 			>
 				{row.projectCaption}
@@ -408,7 +410,7 @@
 
 {#snippet rowActions(row: SurveyListRow)}
 	<EntityLink
-		href={resolve(`/surveys/${row.id}` as Pathname)}
+		href={resolve(`/surveys/${row.id}`)}
 		class="inline-flex min-h-target min-w-target items-center justify-center"
 	>
 		Open

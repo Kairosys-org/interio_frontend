@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, Inbox } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -127,7 +126,7 @@
 		const target = search.length > 0 ? `/dedup-queue?${search}` : '/dedup-queue';
 		if (target === lastUrl) return;
 		lastUrl = target;
-		void goto(resolve(target as Pathname), {
+		void goto(search.length > 0 ? resolve(`/dedup-queue?${search}`) : resolve('/dedup-queue'), {
 			replaceState: true,
 			noScroll: true,
 			keepFocus: true

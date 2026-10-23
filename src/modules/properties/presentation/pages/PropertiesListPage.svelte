@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -137,11 +136,14 @@
 	function applyUrl(next: ListUrlState): void {
 		const target = buildHref(next);
 		if (target === `${page.url.pathname}${page.url.search}`) return;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			keepFocus: true,
-			noScroll: true
-		});
+		void goto(
+			target.includes('?') ? resolve(target as `/properties?${string}`) : resolve('/properties'),
+			{
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true
+			}
+		);
 	}
 
 	const urlState = $derived.by(() => readUrl(page.url.searchParams));
@@ -390,7 +392,7 @@
 
 {#snippet rowActions(row: PropertyListRow)}
 	<EntityLink
-		href={resolve(`/properties/${row.id}` as Pathname)}
+		href={resolve(`/properties/${row.id}`)}
 		class="inline-flex min-h-target min-w-target items-center justify-center"
 	>
 		Open

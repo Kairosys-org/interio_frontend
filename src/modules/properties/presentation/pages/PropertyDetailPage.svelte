@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { PERMISSIONS } from '$shared/domain/permissions';
@@ -101,7 +100,7 @@
 			{
 				label: 'Customer',
 				value: customer?.caption ?? 'Unknown customer',
-				href: customer ? resolve(`/customers/${customer.id}` as Pathname) : undefined
+				href: customer ? resolve(`/customers/${customer.id}`) : undefined
 			}
 		];
 	});
@@ -161,13 +160,16 @@
 		else params.set('tab', tab);
 
 		const suffix = params.toString();
-		const target =
-			suffix.length > 0 ? `/properties/${propertyId}?${suffix}` : `/properties/${propertyId}`;
-		void goto(resolve(target as Pathname), {
-			replaceState: true,
-			noScroll: true,
-			keepFocus: true
-		});
+		void goto(
+			suffix.length > 0
+				? resolve(`/properties/${propertyId}?${suffix}`)
+				: resolve(`/properties/${propertyId}`),
+			{
+				replaceState: true,
+				noScroll: true,
+				keepFocus: true
+			}
+		);
 	});
 
 	// Audit is lazy: it only loads once the tab is first opened.
@@ -341,7 +343,7 @@
 								description="Create a project from /projects/new to start work at this address."
 							>
 								{#snippet action()}
-									<TextLink href={resolve('/projects/new' as Pathname)}>New project</TextLink>
+									<TextLink href={resolve('/projects/new')}>New project</TextLink>
 								{/snippet}
 							</EmptyState>
 						{:else}
@@ -352,7 +354,7 @@
 									>
 										<div class="flex min-w-0 flex-col gap-1">
 											<EntityLink
-												href={resolve(`/projects/${project.id}` as Pathname)}
+												href={resolve(`/projects/${project.id}`)}
 												class="inline-flex min-h-target items-center"
 											>
 												{project.caption}

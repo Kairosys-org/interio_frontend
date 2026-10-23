@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert } from '@lucide/svelte';
 	import { isApiError } from '$network/errors';
 	import { formatCount } from '$shared/lib/format';
@@ -120,9 +119,9 @@
 
 	function entityHref(row: ImportRow): string | null {
 		if (!row.entityId || !row.entityType) return null;
-		if (row.entityType === 'customer') return resolve(`/customers/${row.entityId}` as Pathname);
-		if (row.entityType === 'property') return resolve(`/properties/${row.entityId}` as Pathname);
-		if (row.entityType === 'project') return resolve(`/projects/${row.entityId}` as Pathname);
+		if (row.entityType === 'customer') return resolve(`/customers/${row.entityId}`);
+		if (row.entityType === 'property') return resolve(`/properties/${row.entityId}`);
+		if (row.entityType === 'project') return resolve(`/projects/${row.entityId}`);
 		return null;
 	}
 

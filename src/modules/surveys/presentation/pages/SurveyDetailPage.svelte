@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { CircleAlert } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -116,11 +115,9 @@
 	]);
 
 	const verifyHref = $derived(
-		survey ? resolve(`/surveys/${survey.id}/verify` as Pathname) : resolve('/surveys' as Pathname)
+		survey ? resolve(`/surveys/${survey.id}/verify`) : resolve('/surveys')
 	);
-	const mediaHref = $derived(
-		survey ? resolve(`/surveys/${survey.id}/media` as Pathname) : resolve('/surveys' as Pathname)
-	);
+	const mediaHref = $derived(survey ? resolve(`/surveys/${survey.id}/media`) : resolve('/surveys'));
 
 	const measurements = $derived.by(() => {
 		if (!detail) return [] as Array<{ measurement: SurveyMeasurement; roomCaption: string }>;
@@ -260,7 +257,7 @@
 			{
 				label: 'Project',
 				value: detail.project.caption,
-				href: resolve(`/projects/${detail.project.id}` as Pathname)
+				href: resolve(`/projects/${detail.project.id}`)
 			},
 			{ label: 'Reference', value: detail.project.reference, mono: true },
 			{ label: 'Customer', value: detail.customer?.caption ?? null },
@@ -455,7 +452,7 @@
 			return;
 		}
 		if (action === 'verify') {
-			void goto(resolve(`/surveys/${survey?.id ?? ''}/verify` as Pathname));
+			void goto(resolve(`/surveys/${survey?.id ?? ''}/verify`));
 			return;
 		}
 		openTransition(action);
@@ -463,7 +460,7 @@
 
 	function handleVerifyFromChecklist(): void {
 		checklistOpen = false;
-		void goto(resolve(`/surveys/${survey?.id ?? ''}/verify` as Pathname));
+		void goto(resolve(`/surveys/${survey?.id ?? ''}/verify`));
 	}
 
 	function toMediaItem(item: SurveyMediaItem, labels: Map<string, string>): MediaItem {

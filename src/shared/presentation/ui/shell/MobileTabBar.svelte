@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
+	import { resolve } from '$app/paths';
 	import { ClipboardList, FolderKanban, RefreshCw, UserRound } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 
@@ -46,7 +45,7 @@
 			{@const active = isActive(tab.href)}
 			<li class="flex-1">
 				<a
-					href={resolve(tab.href as Pathname)}
+					href={resolve(tab.href as '/m/projects')}
 					aria-current={active ? 'page' : undefined}
 					class={cn(
 						'flex min-h-target touch-manipulation flex-col items-center justify-center gap-1 px-2 py-2 text-caption',

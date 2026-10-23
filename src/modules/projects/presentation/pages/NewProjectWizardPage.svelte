@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import type { Pathname } from '$app/types';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { ApiErrorCode } from '$network/errors';
@@ -273,7 +272,7 @@
 				surveyorIds: selectedSurveyorIds
 			});
 			toast.success(`Project ${project.reference} created.`);
-			await goto(resolve(`/projects/${project.id}` as Pathname));
+			await goto(resolve(`/projects/${project.id}`));
 		} catch (caught) {
 			if (
 				isApiError(caught) &&
@@ -296,7 +295,7 @@
 	function handleReviewed(project: Project): void {
 		dedupOpen = false;
 		const destination = project.dedupOfId ?? project.id;
-		void goto(resolve(`/projects/${destination}` as Pathname));
+		void goto(resolve(`/projects/${destination}`));
 	}
 </script>
 

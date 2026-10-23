@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
 	import { tick, untrack } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import { NAV_SECTIONS, visibleSections } from '$shared/application/navigation';
@@ -80,7 +79,7 @@
 			return;
 		}
 		clearSession();
-		void goto(resolve('/login' as Pathname));
+		void goto(resolve('/login'));
 	}
 
 	function focusableIn(root: HTMLElement): HTMLElement[] {

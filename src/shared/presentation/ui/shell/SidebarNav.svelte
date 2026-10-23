@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import type { Pathname } from '$app/types';
+	import { resolve } from '$app/paths';
 	import { PanelLeft, PanelLeftClose } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 	import type { NavItem, NavSection } from '$shared/application/navigation';
@@ -62,7 +61,7 @@
 
 {#snippet navItem(entry: NavItem)}
 	<a
-		href={resolve(entry.href as Pathname)}
+		href={resolve(entry.href as '/dashboard')}
 		data-nav-item
 		aria-current={isActive(entry.href) ? 'page' : undefined}
 		aria-label={collapsed ? entry.label : undefined}
