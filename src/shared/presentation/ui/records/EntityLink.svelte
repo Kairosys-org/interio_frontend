@@ -22,7 +22,7 @@
 <a
 	{...linkAttributes}
 	class={cn(
-		'inline rounded-sm break-words text-brand underline underline-offset-2 hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2',
+		'inline-flex min-h-target items-center rounded-sm break-words text-brand underline underline-offset-2 hover:text-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2',
 		className
 	)}
 >
