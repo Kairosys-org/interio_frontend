@@ -8,6 +8,7 @@ export const INVITATION_TOKEN = deterministicUuid('invitation-token:opulent:desi
 
 export const ACCOUNTS = {
 	sales: 'sales@opulentinteriors.co.uk',
+	owner: 'owner@opulentinteriors.co.uk',
 	harbourOwner: 'owner@harbourfinch.co.uk',
 	systemAdmin: 'admin@opulentinteriors.co.uk',
 	ambiguous: 'ambiguous@example.com',
