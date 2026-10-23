@@ -56,7 +56,9 @@
 	}
 </script>
 
-<div class="overflow-hidden rounded-lg border border-hairline bg-canvas">
+<div
+	class="w-full min-w-0 overflow-hidden rounded-lg border border-hairline bg-canvas contain-paint"
+>
 	{#if loading}
 		<div class="flex flex-col gap-3 p-4" role="status" aria-live="polite">
 			<span class="sr-only">Loading {caption}</span>
@@ -124,7 +126,13 @@
 							</th>
 						{/each}
 						{#if actions}
-							<th scope="col" class={cn('px-4 py-3 text-end', compact && 'px-3 py-2')}>
+							<th
+								scope="col"
+								class={cn(
+									'sticky right-0 border-l border-hairline bg-canvas-grouped px-4 py-3 text-end',
+									compact && 'px-3 py-2'
+								)}
+							>
 								<span class="sr-only">Actions</span>
 							</th>
 						{/if}
@@ -145,7 +153,12 @@
 								</td>
 							{/each}
 							{#if actions}
-								<td class={cn('px-4 py-3 align-middle', compact && 'px-3 py-2')}>
+								<td
+									class={cn(
+										'sticky right-0 border-l border-hairline bg-canvas px-4 py-3 align-middle',
+										compact && 'px-3 py-2'
+									)}
+								>
 									<div class="flex items-center justify-end gap-2">
 										{@render actions(row)}
 									</div>
