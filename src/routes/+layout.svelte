@@ -14,6 +14,18 @@
 		// The session store stays free of feature knowledge: the auth facade is
 		// injected here, so a stored token is exchanged for `/auth/me` on reload.
 		void session.init(() => authApi.me());
+
+		// `ModeWatcher` flips the `dark` class on <html>. Re-resolve the tenant
+		// accent after that class change so a light accent never survives into
+		// dark mode (DESIGN §15.2: branding cannot break contrast).
+		const observer = new MutationObserver(() => {
+			applyTenantBranding($sessionStore.user?.tenant ?? null);
+		});
+		observer.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class']
+		});
+		return () => observer.disconnect();
 	});
 
 	// Tenant branding is applied on the document root before the authenticated

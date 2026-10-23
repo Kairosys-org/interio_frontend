@@ -116,10 +116,16 @@ function isDarkMode(): boolean {
 	return document.documentElement.classList.contains('dark');
 }
 
-/** Clamp lightness until the accent reaches 4.5:1 against the canvas. */
+/**
+ * Clamp lightness until the accent reaches 5:1 against the canvas.
+ *
+ * 5:1 rather than 4.5:1 leaves headroom for the label drawn on top of the
+ * accent: the chosen on-accent must also clear 4.5:1, and a canvas-safe accent
+ * that only just passes leaves its dark-mode label short.
+ */
 function guardAccent(accent: Rgb, canvas: Rgb): Rgb {
 	const oklch = rgbToOklch(accent);
-	if (contrast(accent, canvas) >= 4.5) return accent;
+	if (contrast(accent, canvas) >= 5) return accent;
 
 	const downwards = relativeLuminance(canvas) > 0.5;
 	let low = downwards ? 0 : oklch.l;
@@ -128,7 +134,7 @@ function guardAccent(accent: Rgb, canvas: Rgb): Rgb {
 	for (let step = 0; step < 24; step += 1) {
 		const l = (low + high) / 2;
 		const next = oklchToRgb({ ...oklch, l });
-		if (contrast(next, canvas) >= 4.5) {
+		if (contrast(next, canvas) >= 5) {
 			candidate = next;
 			if (downwards) low = l;
 			else high = l;
@@ -146,7 +152,7 @@ function guardAccent(accent: Rgb, canvas: Rgb): Rgb {
 	const base = rgbToOklch(candidate);
 	let lightness = base.l;
 	let result = quantise(candidate);
-	for (let step = 0; step < 64 && contrast(result, canvas) < 4.5; step += 1) {
+	for (let step = 0; step < 64 && contrast(result, canvas) < 5; step += 1) {
 		lightness += downwards ? -0.004 : 0.004;
 		if (lightness < 0 || lightness > 1) break;
 		result = quantise(oklchToRgb({ ...base, l: lightness }));
@@ -249,12 +255,15 @@ export function resetTenantBranding(): void {
  * Apply tenant branding after `/auth/me` and before the authenticated shell
  * paints. Unknown or invalid values fall back to Interio brass.
  */
-export function applyTenantBranding(tenant: TenantIdentity | null | undefined): void {
+export function applyTenantBranding(
+	tenant: TenantIdentity | null | undefined,
+	dark?: boolean
+): void {
 	resetTenantBranding();
 	if (!tenant || typeof document === 'undefined') return;
 	let resolved: ResolvedTenantBranding | null = null;
 	try {
-		resolved = resolveTenantBranding(tenant.branding);
+		resolved = resolveTenantBranding(tenant.branding, dark ?? isDarkMode());
 	} catch {
 		resolved = null;
 	}
