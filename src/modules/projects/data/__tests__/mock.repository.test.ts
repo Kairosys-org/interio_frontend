@@ -553,11 +553,13 @@ describe('mockCreateProject', () => {
 			state: 'pending_review',
 			dedupOfId: demoProjectId(1)
 		});
+		// The wizard's surveyor choices are kept on the held row so that
+		// `confirm_distinct` produces an active, assignable project.
 		expect(
 			getCollection<ProjectUserRecord>(COLLECTIONS.projectUsers).some(
 				(row) => row.projectId === details.heldId
 			)
-		).toBe(false);
+		).toBe(true);
 
 		const audit = await mockListProjectAudit(details.heldId);
 		expect(audit.find((row) => row.action === 'create')?.payload).toEqual({ held: true });

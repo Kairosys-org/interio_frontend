@@ -601,6 +601,22 @@ export async function mockCreateProject(input: CreateProjectInput): Promise<Proj
 			dedupOfId: candidates[0].id
 		};
 		updateCollection<ProjectRecord>(COLLECTIONS.projects, (rows) => [...rows, held]);
+		// Keep the wizard's surveyor choices on the held row: after
+		// `confirm_distinct` the project becomes active and must be assignable.
+		if (requestedSurveyors.length > 0) {
+			const heldAssignments: ProjectUserRecord[] = requestedSurveyors.map((surveyorId) => ({
+				id: newUuid(),
+				tenantId,
+				projectId: held.id,
+				userId: surveyorId,
+				assignedAt: now,
+				assignedBy: user.id
+			}));
+			updateCollection<ProjectUserRecord>(COLLECTIONS.projectUsers, (rows) => [
+				...rows,
+				...heldAssignments
+			]);
+		}
 		recordTenantAudit({
 			tenantId,
 			action: 'create',
