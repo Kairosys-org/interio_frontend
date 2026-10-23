@@ -3,7 +3,7 @@
  * It behaves like a small server: collections persist across reloads, seeders
  * merge instead of overwriting, and readers receive clones.
  */
-export const MOCK_DB_SCHEMA_VERSION = 2;
+export const MOCK_DB_SCHEMA_VERSION = 3;
 
 const MOCK_DB_STORAGE_KEY = 'interio_mock_db_v1';
 const DEMO_SEEDED_AT = '2026-10-22T09:00:00.000Z';
@@ -21,7 +21,14 @@ export const MIGRATIONS: Record<number, (db: MockDbEnvelope) => MockDbEnvelope> 
 	 * only has to keep existing rows and stamp the new version. No collection
 	 * shape changed, so nothing is rewritten or dropped.
 	 */
-	1: (db) => db
+	1: (db) => db,
+	/**
+	 * v2 → v3 (Phase 2 survey capture). The survey, asset and outbox
+	 * collections are absent from a v2 envelope and `readMockDb` seeds them on
+	 * the first read, so existing Phase 0/1 rows are kept and only the version
+	 * is stamped. No earlier collection shape changed.
+	 */
+	2: (db) => db
 };
 
 export type Seeder = () => Record<string, unknown[]>;

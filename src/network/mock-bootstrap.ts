@@ -12,5 +12,8 @@ import '$modules/properties/data/mock';
 import '$modules/projects/data/mock';
 import '$modules/duplicates/data/mock';
 import '$modules/imports/data/mock';
+import '$modules/surveys/data/mock';
+import '$modules/assets/data/mock';
+import '$modules/sync/data/mock';
 
 export const MOCK_BOOTSTRAP_READY = true;

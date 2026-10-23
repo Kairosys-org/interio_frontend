@@ -90,7 +90,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
 	{
 		id: 'survey',
 		label: 'Survey',
-		items: [item('Surveys', '/surveys', Ruler, PERMISSIONS.SURVEY_VIEW)]
+		items: [item('Surveys', '/surveys', Ruler, PERMISSIONS.SURVEY_VIEW, true)]
 	},
 	{
 		id: 'design',

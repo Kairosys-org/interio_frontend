@@ -15,6 +15,14 @@ export const ROUTE_PERMISSIONS: Readonly<Record<string, string | null>> = Object
 	'/dedup-queue': PERMISSIONS.CUSTOMER_VIEW,
 	'/imports': PERMISSIONS.IMPORT_VIEW,
 	'/imports/new': PERMISSIONS.IMPORT_CREATE,
+	// Phase 2 — survey review (web) and the mobile capture shell.
+	'/surveys': PERMISSIONS.SURVEY_VIEW,
+	'/m/login': null,
+	'/m': PERMISSIONS.SURVEY_VIEW,
+	'/m/projects': PERMISSIONS.SURVEY_VIEW,
+	'/m/surveys': PERMISSIONS.SURVEY_VIEW,
+	'/m/sync': PERMISSIONS.SURVEY_VIEW,
+	'/m/account': PERMISSIONS.SURVEY_VIEW,
 	'/platform': PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW,
 	'/platform/tenants': PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW,
 	'/platform/audit': PLATFORM_PERMISSIONS.PLATFORM_AUDIT_VIEW
