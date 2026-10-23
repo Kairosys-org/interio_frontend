@@ -647,6 +647,8 @@ export interface UpdateObstacleInput {
 }
 
 export interface CreateMeasurementInput {
+	/** Part 9 §10 requires a room context; `/surveys/:id/measurements` supplies it. */
+	surveyRoomId: Uuid;
 	targetType: MeasurementTargetType;
 	/** Required when `targetType === 'other'`. */
 	targetCaption?: string | null;
