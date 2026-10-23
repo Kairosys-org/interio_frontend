@@ -1,6 +1,6 @@
 # Phase 1 — Records spine (customers, properties, projects)
 
-> **Status:** not started · created 2026-10-22
+> **Status:** completed · 2026-10-23 · gate green (check, lint, arch:check, unit, e2e, build)
 > **Depends on:** phase-0 · **Unlocks:** 2–8
 > **Spec map:** `spec.md` Part 12 §1 "1b — Records spine"; Part 11 §4.2 (customers, customer detail, properties, projects, project hub, dedup queue) and §4.13 (imports, customer/property/project kinds); Part 10 §5–§6 and §26; Part 5 §4.1–§4.3 and §5 (dedup); Part 4 §1 (customer/property/project states); Part 6 §3; Part 13 FT-M2-01…04, C-02, C-08.
 > **Read with:** `spec.md` Part 5 §4.1–§4.3 + §5, Part 6 §3 + §7, Part 10 §5–§6 + §26, Part 11 §4.2 + §4.13 (import sections only), Part 13 §3 (M2); `DESIGN.md` §3.7 + Appendix B (states), §5.5 (density), §9.2 (`DataTable`, `AssignmentPanel`, `DedupReviewModal`, `AuditTrailTab`, `StageIndicator`, `GateBanner`), §10.2 (List, Detail hub, Wizard), §12, §15; `ui-ux.md` §6–§9, §13, §15; `standards/architecture.md` §3–§4, §9–§11, §16 (Mode B), §22; `testing/ui-ux-tester.md`; `testing/standards/basic-rules.md`.
@@ -168,16 +168,16 @@ No two agents share a file; shared-UI changes are requested via wiring patch, no
 
 ## 8. Done when
 
-- [ ] All ten routes render real mock data; lists filter/search/sort/paginate and the URL reflects state (reload restores the view).
-- [ ] Create customer with a duplicate → held `pending_review`, appears in `/dedup-queue`; `link_to_existing` and `confirm_distinct` (with note) both work and are audited; no auto-merge anywhere.
-- [ ] New project wizard: customer → property → project → assign surveyor(s) → review → created; non-Surveyor cannot be assigned; removal confirmation explains existing surveys are kept; changes are audited.
-- [ ] Project hub shows StageIndicator, summary cards, AssignmentPanel and the audit tab; illegal transitions are blocked with a `GateBanner` reason, not a dead button.
-- [ ] Imports: staged batch preview shows per-row flags; commit is enabled only while `staged`, shows counts, creates new records only, sends clashes to dedup; committed/cancelled batches are read-only.
-- [ ] `arch:check` 0 violations; no presentation import of `data/mock*` / `data/adapters/*` / `$network/mock-backend`; no business rules in `.svelte`; no Svelte 4 syntax.
-- [ ] All ids are UUIDs; two consecutive `resetMockDb()` + reseed runs produce byte-identical seed data; mock DB version bumped with a migration.
-- [ ] Unit + e2e suites in §5.4 pass; Playwright journeys cover the five flows above.
-- [ ] Browser matrix on every route and every state: 320/390/768/1280/1920, light + dark, high contrast, 200 % zoom, keyboard-only, zero console errors, targets ≥44×44, AA contrast, no horizontal page scroll.
-- [ ] Full pnpm gate green; all units committed and pushed to `main`; phase status flipped only after the gate.
+- [x] All ten routes render real mock data; lists filter/search/sort/paginate and the URL reflects state (reload restores the view).
+- [x] Create customer with a duplicate → held `pending_review`, appears in `/dedup-queue`; `link_to_existing` and `confirm_distinct` (with note) both work and are audited; no auto-merge anywhere.
+- [x] New project wizard: customer → property → project → assign surveyor(s) → review → created; non-Surveyor cannot be assigned; removal confirmation explains existing surveys are kept; changes are audited.
+- [x] Project hub shows StageIndicator, summary cards, AssignmentPanel and the audit tab; illegal transitions are blocked with a `GateBanner` reason, not a dead button.
+- [x] Imports: staged batch preview shows per-row flags; commit is enabled only while `staged`, shows counts, creates new records only, sends clashes to dedup; committed/cancelled batches are read-only.
+- [x] `arch:check` 0 violations; no presentation import of `data/mock*` / `data/adapters/*` / `$network/mock-backend`; no business rules in `.svelte`; no Svelte 4 syntax.
+- [x] All ids are UUIDs; two consecutive `resetMockDb()` + reseed runs produce byte-identical seed data; mock DB version bumped with a migration.
+- [x] Unit + e2e suites in §5.4 pass; Playwright journeys cover the five flows above.
+- [x] Browser matrix on every route and every state: 320/390/768/1280/1920, light + dark, high contrast, 200 % zoom, keyboard-only, zero console errors, targets ≥44×44, AA contrast, no horizontal page scroll.
+- [x] Full pnpm gate green; all units committed and pushed to `main`; phase status flipped only after the gate.
 
 ---
 
