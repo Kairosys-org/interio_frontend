@@ -26,7 +26,7 @@
 			{#if eyebrow}
 				<p class="text-footnote text-ink-secondary">{eyebrow}</p>
 			{/if}
-			<h1 class="text-large-title text-ink">{title}</h1>
+			<h1 class="text-large-title break-words text-ink">{title}</h1>
 			{#if description}
 				<p class="max-w-content-reading text-body text-ink-secondary">{description}</p>
 			{/if}
