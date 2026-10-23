@@ -68,8 +68,7 @@
 		{ key: 'caption', label: 'Customer', sortable: true },
 		{ key: 'contact', label: 'Contact' },
 		{ key: 'postcode', label: 'Postcode', sortable: true },
-		{ key: 'state', label: 'State', sortable: true },
-		{ key: 'createdAt', label: 'Created', sortable: true }
+		{ key: 'state', label: 'State', sortable: true }
 	];
 
 	function isCustomerState(value: string | null): value is CustomerState {
@@ -312,6 +311,12 @@
 {/snippet}
 
 {#snippet rowActions(row: CustomerListRow)}
+	<EntityLink
+		href={resolve(`/customers/${row.id}` as Pathname)}
+		class="inline-flex min-h-target min-w-target items-center justify-center"
+	>
+		Open
+	</EntityLink>
 	{#if row.state === 'pending_review'}
 		<PermissionGate permission={PERMISSIONS.CUSTOMER_UPDATE}>
 			<Button variant="tertiary" onclick={() => openDedup(row)}>Review duplicate</Button>

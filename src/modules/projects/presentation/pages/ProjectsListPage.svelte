@@ -62,13 +62,11 @@
 
 	const columns: TableColumn[] = [
 		{ key: 'caption', label: 'Project', sortable: true },
-		{ key: 'reference', label: 'Reference', sortable: true },
 		{ key: 'customer', label: 'Customer' },
 		{ key: 'property', label: 'Property' },
 		{ key: 'projectType', label: 'Type' },
 		{ key: 'status', label: 'Status', sortable: true },
-		{ key: 'surveyors', label: 'Surveyors' },
-		{ key: 'createdAt', label: 'Created', sortable: true }
+		{ key: 'surveyors', label: 'Surveyors' }
 	];
 
 	const typeOptions = [
