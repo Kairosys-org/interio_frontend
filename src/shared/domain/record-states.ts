@@ -71,3 +71,25 @@ export const CUSTOMER_SOURCE_LABELS: Readonly<Record<CustomerSource, string>> = 
 	other: 'Other',
 	crm_lead: 'CRM lead'
 });
+
+/* ------------------------------------------------------------------ */
+/* Phase 2 — survey, asset upload and sync states.                     */
+/* Part 4 §2 (survey machine), Part 9 §12 (upload state), §13 (queue). */
+/* ------------------------------------------------------------------ */
+
+export const SURVEY_STATES = [
+	'draft',
+	'in_progress',
+	'submitted',
+	'verified',
+	'rejected',
+	'cancelled'
+] as const;
+export type SurveyState = (typeof SURVEY_STATES)[number];
+
+export const ASSET_UPLOAD_STATES = ['pending', 'uploading', 'complete', 'failed'] as const;
+export type AssetUploadState = (typeof ASSET_UPLOAD_STATES)[number];
+
+/** Outbox rows survive a reload, so `sending` must be recoverable too. */
+export const SYNC_OP_STATES = ['queued', 'sending', 'sent', 'failed', 'conflict'] as const;
+export type SyncOpState = (typeof SYNC_OP_STATES)[number];

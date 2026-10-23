@@ -28,6 +28,78 @@ export function demoSurveyorId(key: string): string {
 	return deterministicUuid(`user:opulent:${key}`);
 }
 
+/* ------------------------------------------------------------------ */
+/* Phase 2 — survey tree identities (phase-2 §5.2).                    */
+/* Survey seeds, the asset fixtures and the outbox conflict fixture    */
+/* all derive ids through these helpers so foreign keys never drift.   */
+/* ------------------------------------------------------------------ */
+
+export function demoSurveyId(projectN: number, surveyN: number): string {
+	return deterministicUuid(`survey:${projectN}:${surveyN}`);
+}
+export function demoSurveyRoomId(projectN: number, surveyN: number, roomN: number): string {
+	return deterministicUuid(`survey-room:${projectN}:${surveyN}:${roomN}`);
+}
+export function demoSurveyWallId(
+	projectN: number,
+	surveyN: number,
+	roomN: number,
+	wallN: number
+): string {
+	return deterministicUuid(`survey-wall:${projectN}:${surveyN}:${roomN}:${wallN}`);
+}
+export function demoSurveyOpeningId(
+	projectN: number,
+	surveyN: number,
+	roomN: number,
+	openingN: number
+): string {
+	return deterministicUuid(`survey-opening:${projectN}:${surveyN}:${roomN}:${openingN}`);
+}
+export function demoSurveyUtilityId(
+	projectN: number,
+	surveyN: number,
+	roomN: number,
+	utilityN: number
+): string {
+	return deterministicUuid(`survey-utility:${projectN}:${surveyN}:${roomN}:${utilityN}`);
+}
+export function demoSurveyObstacleId(
+	projectN: number,
+	surveyN: number,
+	roomN: number,
+	obstacleN: number
+): string {
+	return deterministicUuid(`survey-obstacle:${projectN}:${surveyN}:${roomN}:${obstacleN}`);
+}
+export function demoSurveyMeasurementId(
+	projectN: number,
+	surveyN: number,
+	roomN: number,
+	measurementN: number
+): string {
+	return deterministicUuid(`survey-measurement:${projectN}:${surveyN}:${roomN}:${measurementN}`);
+}
+export function demoSurveyNoteId(projectN: number, surveyN: number, noteN: number): string {
+	return deterministicUuid(`survey-note:${projectN}:${surveyN}:${noteN}`);
+}
+export function demoAssetId(key: string): string {
+	return deterministicUuid(`asset:${key}`);
+}
+
+/**
+ * Phase 2 seed roles. `projectN`/`surveyN` follow the helpers above.
+ * - `in_progress` (project 1) carries the offline capture and G8 fixtures.
+ * - `verified` (project 1) is the complete read-only tree.
+ * - `submitted` (project 2) awaits verification; `rejected` (project 3).
+ */
+export const DEMO_SURVEY_KEYS = Object.freeze({
+	inProgress: { projectN: 1, surveyN: 1 },
+	verified: { projectN: 1, surveyN: 2 },
+	submitted: { projectN: 2, surveyN: 1 },
+	rejected: { projectN: 3, surveyN: 1 }
+});
+
 export interface DemoCustomerPlan {
 	n: number;
 	caption: string;
