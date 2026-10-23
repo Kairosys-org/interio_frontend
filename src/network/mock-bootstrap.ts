@@ -7,5 +7,10 @@
  */
 import '$modules/auth/data/mock';
 import '$modules/platform-tenants/data/mock';
+import '$modules/customers/data/mock';
+import '$modules/properties/data/mock';
+import '$modules/projects/data/mock';
+import '$modules/duplicates/data/mock';
+import '$modules/imports/data/mock';
 
 export const MOCK_BOOTSTRAP_READY = true;

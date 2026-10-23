@@ -21,8 +21,11 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
 
 export function normalisePageParams(params: PageParams = {}): { page: number; pageSize: number } {
-	const page = Number.isInteger(params.page) && (params.page ?? 0) > 0 ? (params.page as number) : 1;
-	const requested = Number.isInteger(params.pageSize) ? (params.pageSize as number) : DEFAULT_PAGE_SIZE;
+	const page =
+		Number.isInteger(params.page) && (params.page ?? 0) > 0 ? (params.page as number) : 1;
+	const requested = Number.isInteger(params.pageSize)
+		? (params.pageSize as number)
+		: DEFAULT_PAGE_SIZE;
 	const pageSize = Math.min(Math.max(requested, 1), MAX_PAGE_SIZE);
 	return { page, pageSize };
 }

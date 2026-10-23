@@ -1,9 +1,5 @@
 import type { Page } from '$shared/domain/pagination';
-import type {
-	CustomerSource,
-	CustomerState,
-	PreferredChannel
-} from '$shared/domain/record-states';
+import type { CustomerSource, CustomerState, PreferredChannel } from '$shared/domain/record-states';
 import type { DedupCandidateRef, DedupReviewInput } from '$shared/domain/dedup';
 import type { Uuid } from '$shared/domain/uuid';
 

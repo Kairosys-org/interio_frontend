@@ -87,12 +87,17 @@
 			{/if}
 		</span>
 
-		<span class="flex flex-col gap-1">
-			<span class={cn('text-callout', disabled ? 'text-ink-disabled' : 'text-ink')}>{label}</span>
+		<span class="flex min-w-0 flex-col gap-1">
+			<span class={cn('text-callout break-words', disabled ? 'text-ink-disabled' : 'text-ink')}
+				>{label}</span
+			>
 			{#if description}
 				<span
 					id={descriptionId}
-					class={cn('text-footnote', disabled ? 'text-ink-disabled' : 'text-ink-secondary')}
+					class={cn(
+						'text-footnote break-words',
+						disabled ? 'text-ink-disabled' : 'text-ink-secondary'
+					)}
 				>
 					{description}
 				</span>

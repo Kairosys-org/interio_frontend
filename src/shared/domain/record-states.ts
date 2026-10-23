@@ -10,13 +10,7 @@ export type CustomerState = (typeof CUSTOMER_STATES)[number];
 /** Properties use the same extended archival states as customers (R5 hold). */
 export type PropertyState = CustomerState;
 
-export const CUSTOMER_SOURCES = [
-	'survey',
-	'referral',
-	'walk_in',
-	'other',
-	'crm_lead'
-] as const;
+export const CUSTOMER_SOURCES = ['survey', 'referral', 'walk_in', 'other', 'crm_lead'] as const;
 export type CustomerSource = (typeof CUSTOMER_SOURCES)[number];
 
 /**

@@ -25,8 +25,6 @@ export const STATE_CATEGORIES: Record<string, StateCategory> = {
 	'project.on_hold': 'warning',
 	'project.completed': 'neutral',
 	'project.cancelled': 'muted',
-	'project.pending_review': 'warning',
-	'project.archived': 'muted',
 
 	// survey
 	'survey.draft': 'neutral',

@@ -2,11 +2,7 @@ import { apiCall } from '$network/api';
 import { requirePermission } from '$network/guard';
 import { PERMISSIONS } from '$shared/domain/permissions';
 import type { DedupReviewInput } from '$shared/domain/dedup';
-import type {
-	CreateCustomerInput,
-	CustomerListParams,
-	UpdateCustomerInput
-} from '../domain/types';
+import type { CreateCustomerInput, CustomerListParams, UpdateCustomerInput } from '../domain/types';
 import { getCustomersRepository } from './repository-provider';
 
 const READ = { latencyMs: 180 } as const;

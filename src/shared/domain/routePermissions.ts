@@ -8,6 +8,13 @@ import { PERMISSIONS, PLATFORM_PERMISSIONS } from '$shared/domain/permissions';
 export const ROUTE_PERMISSIONS: Readonly<Record<string, string | null>> = Object.freeze({
 	'/dashboard': null,
 	'/activity': PERMISSIONS.AUDIT_VIEW,
+	'/customers': PERMISSIONS.CUSTOMER_VIEW,
+	'/properties': PERMISSIONS.PROPERTY_VIEW,
+	'/projects': PERMISSIONS.PROJECT_VIEW,
+	'/projects/new': PERMISSIONS.PROJECT_CREATE,
+	'/dedup-queue': PERMISSIONS.CUSTOMER_VIEW,
+	'/imports': PERMISSIONS.IMPORT_VIEW,
+	'/imports/new': PERMISSIONS.IMPORT_CREATE,
 	'/platform': PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW,
 	'/platform/tenants': PLATFORM_PERMISSIONS.PLATFORM_TENANT_VIEW,
 	'/platform/audit': PLATFORM_PERMISSIONS.PLATFORM_AUDIT_VIEW

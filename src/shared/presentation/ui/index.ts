@@ -38,6 +38,22 @@ export { default as ErrorBoundary } from './feedback/ErrorBoundary.svelte';
 export { default as ForbiddenPage } from './feedback/ForbiddenPage.svelte';
 export { default as PermissionGate } from './gate/PermissionGate.svelte';
 
+// Records spine — page composition and record-specific display (Phase 1).
+export { default as AssignmentPanel } from './records/AssignmentPanel.svelte';
+export { default as AuditTrailTab } from './records/AuditTrailTab.svelte';
+export { default as ConfirmDialog } from './records/ConfirmDialog.svelte';
+export { default as DataTable } from './records/DataTable.svelte';
+export { default as DedupReviewModal } from './records/DedupReviewModal.svelte';
+export { default as DetailSection } from './records/DetailSection.svelte';
+export { default as EntityLink } from './records/EntityLink.svelte';
+export { default as FormField } from './records/FormField.svelte';
+export { default as GateBanner } from './records/GateBanner.svelte';
+export { default as KeyValueGrid } from './records/KeyValueGrid.svelte';
+export { default as PageHeader } from './records/PageHeader.svelte';
+export { default as SearchInput } from './records/SearchInput.svelte';
+export { default as StageIndicator } from './records/StageIndicator.svelte';
+export { default as Stepper } from './records/Stepper.svelte';
+
 // Shell — owned by the shell agent.
 export { default as AppShell } from './shell/AppShell.svelte';
 export { default as TopBar } from './shell/TopBar.svelte';

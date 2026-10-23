@@ -2,11 +2,7 @@ import { apiCall } from '$network/api';
 import { requirePermission } from '$network/guard';
 import type { DedupReviewInput } from '$shared/domain/dedup';
 import { PERMISSIONS } from '$shared/domain/permissions';
-import type {
-	CreatePropertyInput,
-	PropertyListParams,
-	UpdatePropertyInput
-} from '../domain/types';
+import type { CreatePropertyInput, PropertyListParams, UpdatePropertyInput } from '../domain/types';
 import { getPropertiesRepository } from './repository-provider';
 
 const READ = { latencyMs: 180 } as const;

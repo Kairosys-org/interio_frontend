@@ -78,10 +78,10 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
 		id: 'sales',
 		label: 'Sales',
 		items: [
-			item('Customers', '/customers', Users, PERMISSIONS.CUSTOMER_VIEW),
-			item('Properties', '/properties', Building, PERMISSIONS.PROPERTY_VIEW),
-			item('Projects', '/projects', FolderKanban, PERMISSIONS.PROJECT_VIEW),
-			item('Dedup queue', '/dedup-queue', ClipboardList, PERMISSIONS.CUSTOMER_VIEW),
+			item('Customers', '/customers', Users, PERMISSIONS.CUSTOMER_VIEW, true),
+			item('Properties', '/properties', Building, PERMISSIONS.PROPERTY_VIEW, true),
+			item('Projects', '/projects', FolderKanban, PERMISSIONS.PROJECT_VIEW, true),
+			item('Dedup queue', '/dedup-queue', ClipboardList, PERMISSIONS.CUSTOMER_VIEW, true),
 			item('Quotes', '/quotes', FileText, PERMISSIONS.QUOTE_VIEW),
 			item('Approvals', '/approvals', ClipboardCheck, PERMISSIONS.APPROVAL_VIEW),
 			item('Orders', '/orders', ShoppingCart, PERMISSIONS.SALES_ORDER_VIEW)
@@ -175,7 +175,7 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
 		id: 'data',
 		label: 'Data',
 		items: [
-			item('Import batches', '/imports', Upload, PERMISSIONS.IMPORT_VIEW),
+			item('Import batches', '/imports', Upload, PERMISSIONS.IMPORT_VIEW, true),
 			item('Export centre', '/exports', Download, null)
 		]
 	}
