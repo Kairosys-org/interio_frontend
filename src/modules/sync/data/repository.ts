@@ -13,10 +13,10 @@ import type { SyncOpState } from '$shared/domain/record-states';
  * Sync repository contract (frozen in wave 0, architecture §4.4).
  *
  * `push()` is the simulated `POST /sync/push`: it drains the outbox in order,
- * replays a duplicate `idempotencyKey` with the original result, applies the
- * `baseUpdatedAt` precondition (server wins → `conflict` row), and retries a
- * transient failure with backoff. `pull()` is `GET /sync/pull` and merges
- * server rows over local ones.
+ * replays a duplicate `idempotencyKey` with the original result, refuses to
+ * overwrite a row whose `updatedAt` moved after the op was queued (server wins
+ * → `conflict` row), and retries a transient failure with backoff. `pull()` is
+ * `GET /sync/pull` and merges server rows over local ones.
  */
 export interface SyncRepository {
 	pending(): Promise<SyncPendingCounts>;

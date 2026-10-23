@@ -55,7 +55,13 @@ export interface SyncOperation {
 	op: SyncOp;
 	localId: Uuid;
 	payload: Record<string, unknown>;
-	/** Precondition: the row version the local edit was based on. */
+	/**
+	 * Wire precondition: the row version the local edit was based on.
+	 * The mock detects a moved server row by comparing the target row's
+	 * `updatedAt` with this op's `createdAt` — a row changed after the op was
+	 * queued cannot be overwritten silently (Q10). `baseUpdatedAt` is still
+	 * carried so the fixture and the future API adapter speak the spec format.
+	 */
 	baseUpdatedAt: string | null;
 	state: SyncOpState;
 	attempts: number;
