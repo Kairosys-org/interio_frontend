@@ -68,6 +68,26 @@ export function formatMoney(pence: number): string {
 	return `${sign}£${groupFormat.format(pounds)}.${String(minor).padStart(2, '0')}`;
 }
 
+const sizeFormat = new Intl.NumberFormat(LOCALE, {
+	maximumFractionDigits: 1,
+	minimumFractionDigits: 0
+});
+
+/** `2516582` -> `2.4 MB`; used by upload queues, never for money or dimensions. */
+export function formatFileSize(bytes: number): string {
+	if (!Number.isFinite(bytes) || bytes < 0) return EM_DASH;
+	if (bytes < 1024) return `${countFormat.format(bytes)} B`;
+
+	const units = ['KB', 'MB', 'GB', 'TB'];
+	let value = bytes / 1024;
+	let unit = 0;
+	while (value >= 1024 && unit < units.length - 1) {
+		value /= 1024;
+		unit += 1;
+	}
+	return `${sizeFormat.format(value)} ${units[unit]}`;
+}
+
 /** `2400` -> `2 400 mm` (thin spaces, U+2009). */
 export function formatDimension(mm: number): string {
 	if (!Number.isFinite(mm)) return EM_DASH;

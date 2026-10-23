@@ -54,6 +54,18 @@ export { default as SearchInput } from './records/SearchInput.svelte';
 export { default as StageIndicator } from './records/StageIndicator.svelte';
 export { default as Stepper } from './records/Stepper.svelte';
 
+// Survey capture, media and offline sync (Phase 2).
+export { default as DimensionField } from './input/DimensionField.svelte';
+export { default as ChecklistDrawer } from './records/ChecklistDrawer.svelte';
+export { default as EvidenceUploader } from './media/EvidenceUploader.svelte';
+export { default as MediaGrid } from './media/MediaGrid.svelte';
+export { default as Lightbox } from './media/Lightbox.svelte';
+export { default as OfflineBanner } from './feedback/OfflineBanner.svelte';
+export { default as SyncStatusChip } from './feedback/SyncStatusChip.svelte';
+export { default as MobileTabBar } from './shell/MobileTabBar.svelte';
+export type { ChecklistRow, ChecklistRowStatus, ChecklistSection } from './records/checklist-types';
+export type { EvidenceFile, MediaItem, MediaState } from './media/types';
+
 // Shell — owned by the shell agent.
 export { default as AppShell } from './shell/AppShell.svelte';
 export { default as TopBar } from './shell/TopBar.svelte';
