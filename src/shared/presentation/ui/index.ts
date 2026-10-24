@@ -66,6 +66,12 @@ export { default as MobileTabBar } from './shell/MobileTabBar.svelte';
 export type { ChecklistRow, ChecklistRowStatus, ChecklistSection } from './records/checklist-types';
 export type { EvidenceFile, MediaItem, MediaState } from './media/types';
 
+// Catalogue and materials editors (Phase 3).
+export { default as FilterPills } from './filters/FilterPills.svelte';
+export { default as ExpressionEditor } from './input/ExpressionEditor.svelte';
+export { default as TableEditorDrawer } from './overlay/TableEditorDrawer.svelte';
+export { default as AttributeEditor } from './records/AttributeEditor.svelte';
+
 // Shell — owned by the shell agent.
 export { default as AppShell } from './shell/AppShell.svelte';
 export { default as TopBar } from './shell/TopBar.svelte';
