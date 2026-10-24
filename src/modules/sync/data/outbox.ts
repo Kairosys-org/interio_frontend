@@ -54,6 +54,16 @@ interface OutboxScope {
 	userId: Uuid;
 }
 
+/**
+ * Broadcast that the queue moved so the mobile shell can refresh its chip and
+ * tab badge. Any enqueue, patch or clear happens below this seam, so the shell
+ * never has to poll.
+ */
+function notifySyncChanged(): void {
+	if (typeof window === 'undefined') return;
+	window.dispatchEvent(new Event('interio:sync-changed'));
+}
+
 function scope(): OutboxScope {
 	const { tenantId, user } = requireTenantSession();
 	return { tenantId, userId: user.id };
@@ -108,6 +118,7 @@ export function enqueueOutbox(input: EnqueueOutboxInput): SyncOperationRecord {
 		...getCollection<SyncOperationRecord>(COLLECTIONS.syncOperations),
 		record
 	]);
+	notifySyncChanged();
 	return record;
 }
 
@@ -150,6 +161,7 @@ export function patchOutbox(idempotencyKey: string, patch: OutboxPatch): SyncOpe
 		COLLECTIONS.syncOperations,
 		rows.map((row) => (row.id === existing.id ? updated : row))
 	);
+	notifySyncChanged();
 	return updated;
 }
 
@@ -181,6 +193,9 @@ export function clearSentOutbox(): number {
 	const rows = getCollection<SyncOperationRecord>(COLLECTIONS.syncOperations);
 	const kept = rows.filter((row) => !owned(row, owner) || row.state !== 'sent');
 	const removed = rows.length - kept.length;
-	if (removed > 0) setCollection<SyncOperationRecord>(COLLECTIONS.syncOperations, kept);
+	if (removed > 0) {
+		setCollection<SyncOperationRecord>(COLLECTIONS.syncOperations, kept);
+		notifySyncChanged();
+	}
 	return removed;
 }
