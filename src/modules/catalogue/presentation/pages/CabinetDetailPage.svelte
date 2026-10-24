@@ -68,6 +68,7 @@
 	let parameterOpen = $state(false);
 	let parameterTarget = $state<CabinetParameter | null>(null);
 	let ruleOpen = $state(false);
+	let ruleSource = $state<CabinetComponentRule | null>(null);
 	let togglingRuleId = $state<string | null>(null);
 
 	const parameterNames = $derived(detail?.parameters.map((row) => row.paramName) ?? []);
@@ -157,8 +158,18 @@
 	}
 
 	function onRuleSaved(): void {
-		toast.success('Component rule saved. A functional change created a new version.');
+		toast.success('Component rule saved.');
 		void reload();
+	}
+
+	function newRule(): void {
+		ruleSource = null;
+		ruleOpen = true;
+	}
+
+	function newRuleVersion(rule: CabinetComponentRule): void {
+		ruleSource = rule;
+		ruleOpen = true;
 	}
 
 	async function toggleRule(rule: CabinetComponentRule, active: boolean): Promise<void> {
@@ -253,7 +264,7 @@
 					</PermissionGate>
 				{:else}
 					<PermissionGate permission={PERMISSIONS.CABINET_UPDATE}>
-						<Button onclick={() => (ruleOpen = true)}>
+						<Button onclick={newRule}>
 							{#snippet icon()}<Plus size={18} strokeWidth={1.75} aria-hidden="true" />{/snippet}
 							New component rule
 						</Button>
@@ -341,16 +352,22 @@
 								label="Active"
 								checked={row.active}
 								disabled={togglingRuleId !== null}
-								onchange={(event) =>
-									void toggleRule(row, (event.currentTarget as HTMLInputElement).checked)}
+								onchange={(checked) => void toggleRule(row, checked)}
 							/>
 						</PermissionGate>
 					{/if}
 				{/snippet}
+				{#snippet actions(row)}
+					<PermissionGate permission={PERMISSIONS.CABINET_UPDATE}>
+						<Button variant="tertiary" onclick={() => newRuleVersion(row)}>
+							New version<span class="sr-only"> of {row.partType}</span>
+						</Button>
+					</PermissionGate>
+				{/snippet}
 			</DataTable>
 			<p class="text-footnote text-ink-secondary">
-				Toggling active state keeps the version. Editing the expression creates the next version and
-				retires the previous one for that part type.
+				Toggling active state keeps the version. Editing the expression or condition creates the
+				next version and retires the previous one for that part type.
 			</p>
 		{/if}
 	</div>
@@ -374,6 +391,7 @@
 		bind:open={ruleOpen}
 		cabinetId={detail.cabinet.id}
 		{parameterNames}
+		rule={ruleSource}
 		onClose={() => (ruleOpen = false)}
 		onSaved={onRuleSaved}
 	/>

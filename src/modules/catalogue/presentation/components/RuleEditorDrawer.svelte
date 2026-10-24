@@ -28,11 +28,22 @@
 		open?: boolean;
 		cabinetId: string;
 		parameterNames: string[];
+		/** Existing version to start a new version from; null creates a fresh rule. */
+		rule?: CabinetComponentRule | null;
 		onClose: () => void;
 		onSaved: (rule: CabinetComponentRule) => void;
 	}
 
-	let { open = $bindable(false), cabinetId, parameterNames, onClose, onSaved }: Props = $props();
+	let {
+		open = $bindable(false),
+		cabinetId,
+		parameterNames,
+		rule = null,
+		onClose,
+		onSaved
+	}: Props = $props();
+
+	const editing = $derived(rule !== null);
 
 	let partType = $state('');
 	let exprText = $state('{\n  "length": "width - 6"\n}');
@@ -55,10 +66,13 @@
 		if (wasOpen) return;
 		wasOpen = true;
 
-		partType = '';
-		exprText = '{\n  "length": "width - 6"\n}';
-		conditionText = '';
-		active = true;
+		partType = rule?.partType ?? '';
+		exprText = rule === null ? '{\n  "length": "width - 6"\n}' : formatRuleExpression(rule.expr);
+		conditionText =
+			rule?.condition === null || rule?.condition === undefined
+				? ''
+				: JSON.stringify(rule.condition, null, 2);
+		active = rule?.active ?? true;
 		exprError = null;
 		exprErrorLine = null;
 		conditionError = null;
@@ -156,7 +170,7 @@
 
 <TableEditorDrawer
 	bind:open
-	title="New component rule"
+	title={editing ? `New version of ${rule?.partType}` : 'New component rule'}
 	description="Define what the cabinet is made of. Saving a functional change creates the next rule version."
 	submitLabel="Save rule"
 	saving={submitting}
@@ -169,9 +183,11 @@
 		required
 		bind:value={partType}
 		placeholder="side_panel"
-		hint="The component this rule produces, for example side_panel or shelf."
+		hint={editing
+			? 'The part type is fixed when creating a new version.'
+			: 'The component this rule produces, for example side_panel or shelf.'}
 		error={partTypeError ?? undefined}
-		disabled={submitting}
+		disabled={submitting || editing}
 	/>
 
 	<ExpressionEditor
