@@ -3,19 +3,16 @@ import { browser } from '$app/environment';
 /**
  * Network state for the offline UI (phase-2 §6, DESIGN §13.4).
  *
- * Module-scope rune state in a `.svelte.ts` file: components read it through
- * `isOnline()` inside a reactive context, and the listeners are bound once on
- * first browser read. The mock backend never actually needs the network, so
- * this drives the banner, the queued chips and the outbox drain trigger — the
- * app-level "real" offline switch is `navigator.onLine`.
+ * Module-scope rune state in a `.svelte.ts` file. The listeners are bound once
+ * when the module first loads in the browser — never inside a read — so
+ * components can call `isOnline()` from a `$derived` without mutating state
+ * during a derived recomputation. The mock backend never actually needs the
+ * network, so this drives the banner, the queued chips and the outbox drain
+ * trigger — the app-level "real" offline switch is `navigator.onLine`.
  */
-let online = $state(true);
-let bound = false;
+let online = $state(browser ? navigator.onLine : true);
 
-function bind(): void {
-	if (!browser || bound) return;
-	bound = true;
-	online = navigator.onLine;
+if (browser) {
 	window.addEventListener('online', () => {
 		online = true;
 	});
@@ -25,6 +22,5 @@ function bind(): void {
 }
 
 export function isOnline(): boolean {
-	bind();
 	return online;
 }
