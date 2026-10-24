@@ -3,6 +3,7 @@ import { demoDays } from '$shared/data/demo-clock';
 import {
 	DEMO_SURVEY_KEYS,
 	demoAssetId,
+	demoDecorId,
 	demoSurveyId,
 	demoSurveyOpeningId,
 	demoSurveyRoomId,
@@ -231,8 +232,27 @@ const submittedAssets: AssetRecord[] = [
 	})
 ];
 
+/** Phase 3 decor sample; the decor seeder points `sampleAssetId` at this row. */
+const decorAssets: AssetRecord[] = [
+	assetRecord({
+		key: 'decor-sample:1',
+		ownerType: 'decor',
+		ownerId: demoDecorId(1),
+		assetKind: 'photo',
+		fileName: 'smoked-oak-veneer-sample.jpg',
+		mimeType: 'image/jpeg',
+		sizeBytes: 1_310_720,
+		uploadState: 'complete',
+		caption: 'Placeholder — decor sample swatch for the showroom board (metadata only).',
+		uploadedBy: null,
+		capturedAt: demoDays(30),
+		createdAt: demoDays(30),
+		updatedAt: demoDays(30)
+	})
+];
+
 export function seedAssets(): Record<string, unknown[]> {
 	return {
-		[COLLECTIONS.assets]: [...liveAssets, ...verifiedAssets, ...submittedAssets]
+		[COLLECTIONS.assets]: [...liveAssets, ...verifiedAssets, ...submittedAssets, ...decorAssets]
 	};
 }

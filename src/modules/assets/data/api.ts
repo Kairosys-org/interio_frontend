@@ -1,6 +1,5 @@
 import { apiCall } from '$network/api';
 import { requirePermission } from '$network/guard';
-import { PERMISSIONS } from '$shared/domain/permissions';
 import type { Uuid } from '$shared/domain/uuid';
 import {
 	ASSET_OWNER_PERMISSIONS,
@@ -18,20 +17,18 @@ const WRITE = { latencyMs: 300 } as const;
  * Asset facade (architecture §4.5, Part 6 §3).
  *
  * There is no `asset.*` permission: every action resolves the owner and
- * requires its inherited code. Listing and reading need the inherited view
- * permission; the mock narrows capture-only surveyors to their assignments.
+ * requires its inherited code. The mock filters the list by the caller's
+ * inherited read permission, so surveyors and materials users share one
+ * surface without a blanket module permission.
  */
 export const assetsApi = {
 	list(params: AssetListParams = {}) {
-		return apiCall(() => {
-			requirePermission(PERMISSIONS.SURVEY_VIEW);
-			return getAssetsRepository().list(params);
-		}, READ);
+		return apiCall(() => getAssetsRepository().list(params), READ);
 	},
 
 	get(id: string) {
-		return apiCall(() => {
-			requirePermission(PERMISSIONS.SURVEY_VIEW);
+		return apiCall(async () => {
+			await requireInherited(id, 'view');
 			return getAssetsRepository().get(id);
 		}, READ);
 	},

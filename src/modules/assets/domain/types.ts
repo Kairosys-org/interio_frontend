@@ -20,11 +20,10 @@ export const ASSET_KINDS = ['photo', 'video', 'plan'] as const;
 export type AssetKind = (typeof ASSET_KINDS)[number];
 
 /**
- * Phase 2 owners are the survey tree. Later phases extend this list
- * additively (`quote`, `job`, `order`, `design_version`, `approval`); the
+ * Phase 2 owners are the survey tree. Phase 3 adds decor sample assets; the
  * exactly-one-owner rule is unchanged.
  */
-export const ASSET_OWNER_TYPES = ['survey', 'room', 'wall', 'opening'] as const;
+export const ASSET_OWNER_TYPES = ['survey', 'room', 'wall', 'opening', 'decor'] as const;
 export type AssetOwnerType = (typeof ASSET_OWNER_TYPES)[number];
 
 export interface AssetOwner {
@@ -39,7 +38,8 @@ export const ASSET_OWNER_PERMISSIONS: Readonly<
 	survey: { view: PERMISSIONS.SURVEY_VIEW, write: PERMISSIONS.SURVEY_UPDATE },
 	room: { view: PERMISSIONS.SURVEY_VIEW, write: PERMISSIONS.SURVEY_UPDATE },
 	wall: { view: PERMISSIONS.SURVEY_VIEW, write: PERMISSIONS.SURVEY_UPDATE },
-	opening: { view: PERMISSIONS.SURVEY_VIEW, write: PERMISSIONS.SURVEY_UPDATE }
+	opening: { view: PERMISSIONS.SURVEY_VIEW, write: PERMISSIONS.SURVEY_UPDATE },
+	decor: { view: PERMISSIONS.MATERIALS_VIEW, write: PERMISSIONS.MATERIALS_UPDATE }
 });
 
 export const ASSET_MIME_TYPES: Readonly<Record<AssetKind, readonly string[]>> = Object.freeze({

@@ -4,6 +4,7 @@ import { COLLECTIONS } from '$shared/data/collections';
 import { requireTenantSession, type TenantSession } from '$shared/data/mock-session';
 import type {
 	AssetRecord,
+	DecorRecord,
 	ProjectUserRecord,
 	SurveyOpeningRecord,
 	SurveyRecord,
@@ -11,7 +12,6 @@ import type {
 	SurveyWallRecord
 } from '$shared/data/records';
 import { toPage } from '$shared/domain/pagination';
-import { PERMISSIONS } from '$shared/domain/permissions';
 import { ROLES } from '$shared/domain/roles';
 import { newUuid } from '$shared/lib/uuid';
 import { ApiError, ApiErrorCode } from '$network/errors';
@@ -120,12 +120,14 @@ function assignedToProject(tenantId: string, projectId: string, userId: string):
 }
 
 interface OwnerContext {
-	survey: SurveyRecord;
+	/** Null for decor sample assets, which live outside the survey tree. */
+	survey: SurveyRecord | null;
 }
 
 /**
- * Resolves the single owner to its survey. Tenancy is re-checked at every hop
- * so a guessed id from another tenant ends as a 404, never a cross-tenant read.
+ * Resolves the single owner to its survey (or to the decor itself). Tenancy is
+ * re-checked at every hop so a guessed id from another tenant ends as a 404,
+ * never a cross-tenant read.
  */
 function resolveOwner(ownerType: AssetOwnerType, ownerId: string, tenantId: string): OwnerContext {
 	if (ownerType === 'survey') {
@@ -144,6 +146,14 @@ function resolveOwner(ownerType: AssetOwnerType, ownerId: string, tenantId: stri
 		if (!wall) throw notFound('The record this file belongs to was not found.');
 		const room = findRoomRecord(wall.surveyRoomId, tenantId);
 		return { survey: findSurveyRecord(room.surveyId, tenantId) };
+	}
+
+	if (ownerType === 'decor') {
+		const decor = getCollection<DecorRecord>(COLLECTIONS.decors).find(
+			(row) => row.tenantId === tenantId && row.id === ownerId
+		);
+		if (!decor) throw notFound('The record this file belongs to was not found.');
+		return { survey: null };
 	}
 
 	const opening = getCollection<SurveyOpeningRecord>(COLLECTIONS.surveyOpenings).find(
@@ -170,17 +180,26 @@ function findRoomRecord(id: string, tenantId: string): SurveyRoomRecord {
 	return room;
 }
 
-function assertCanRead(session: TenantSession, survey: SurveyRecord): void {
+function assertCanRead(
+	session: TenantSession,
+	ownerType: AssetOwnerType,
+	owner: OwnerContext
+): void {
 	const { user, tenantId } = session;
-	if (!user.permissions.includes(PERMISSIONS.SURVEY_VIEW)) {
+	const inherited = ASSET_OWNER_PERMISSIONS[ownerType];
+	if (!user.permissions.includes(inherited.view)) {
 		throw new ApiError({
 			code: ApiErrorCode.FORBIDDEN,
 			status: 403,
 			message: 'You do not have permission to perform this action.'
 		});
 	}
+	if (owner.survey === null) return;
 	if (!isCaptureOnly(user)) return;
-	if (survey.surveyorId !== user.id || !assignedToProject(tenantId, survey.projectId, user.id)) {
+	if (
+		owner.survey.surveyorId !== user.id ||
+		!assignedToProject(tenantId, owner.survey.projectId, user.id)
+	) {
 		throw notFound();
 	}
 }
@@ -189,7 +208,7 @@ function assertCanRead(session: TenantSession, survey: SurveyRecord): void {
 function assertCanWrite(
 	session: TenantSession,
 	ownerType: AssetOwnerType,
-	survey: SurveyRecord
+	owner: OwnerContext
 ): void {
 	const { user, tenantId } = session;
 	const inherited = ASSET_OWNER_PERMISSIONS[ownerType];
@@ -200,14 +219,18 @@ function assertCanWrite(
 			message: 'You do not have permission to change this file.'
 		});
 	}
-	if (survey.status === 'cancelled') {
+	if (owner.survey === null) return;
+	if (owner.survey.status === 'cancelled') {
 		throw stateConflict('This survey was cancelled and can no longer be edited.');
 	}
-	if (survey.status === 'verified') {
+	if (owner.survey.status === 'verified') {
 		throw stateConflict('Reopen the survey before editing verified data.');
 	}
 	if (isCaptureOnly(user)) {
-		if (survey.surveyorId !== user.id || !assignedToProject(tenantId, survey.projectId, user.id)) {
+		if (
+			owner.survey.surveyorId !== user.id ||
+			!assignedToProject(tenantId, owner.survey.projectId, user.id)
+		) {
 			throw notFound();
 		}
 	}
@@ -256,41 +279,36 @@ function replaceAsset(updated: AssetRecord): void {
 /* ------------------------------------------------------------------ */
 
 export async function mockListAssets(params: AssetListParams = {}): Promise<AssetPage> {
-	const session = requireTenantSession(PERMISSIONS.SURVEY_VIEW);
+	const session = requireTenantSession();
 	const rows = tenantAssets(session.tenantId)
-		.filter((row) => {
+		.flatMap((row) => {
+			const ownerType = row.ownerType as AssetOwnerType;
 			try {
-				assertCanRead(
-					session,
-					resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId).survey
-				);
-				return true;
+				const owner = resolveOwner(ownerType, row.ownerId, session.tenantId);
+				assertCanRead(session, ownerType, owner);
+				return [{ row, owner }];
 			} catch {
-				return false;
+				return [];
 			}
 		})
 		.filter(
-			(row) =>
+			({ row }) =>
 				(params.ownerType === undefined || row.ownerType === params.ownerType) &&
 				(params.ownerId === undefined || row.ownerId === params.ownerId)
 		)
+		.filter(({ owner }) => params.surveyId === undefined || owner.survey?.id === params.surveyId)
 		.filter(
-			(row) =>
-				params.surveyId === undefined ||
-				resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId).survey.id ===
-					params.surveyId
-		)
-		.filter(
-			(row) =>
+			({ row }) =>
 				params.uploadState === undefined ||
 				params.uploadState === 'all' ||
 				row.uploadState === params.uploadState
 		)
 		.sort(
 			(first, second) =>
-				second.createdAt.localeCompare(first.createdAt) || first.id.localeCompare(second.id)
+				second.row.createdAt.localeCompare(first.row.createdAt) ||
+				first.row.id.localeCompare(second.row.id)
 		)
-		.map(toAsset);
+		.map(({ row }) => toAsset(row));
 
 	return toPage(rows, { page: params.page, pageSize: params.pageSize });
 }
@@ -298,18 +316,16 @@ export async function mockListAssets(params: AssetListParams = {}): Promise<Asse
 export async function mockGetAsset(id: string): Promise<Asset> {
 	const session = requireTenantSession();
 	const row = findAssetRecord(id, session.tenantId);
-	assertCanRead(
-		session,
-		resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId).survey
-	);
+	const ownerType = row.ownerType as AssetOwnerType;
+	assertCanRead(session, ownerType, resolveOwner(ownerType, row.ownerId, session.tenantId));
 	return toAsset(row);
 }
 
 export async function mockInitAsset(input: InitAssetInput): Promise<AssetInitResult> {
 	const session = requireTenantSession();
 	const values = parseInput(assetFormSchema, input);
-	const { survey } = resolveOwner(values.ownerType, values.ownerId, session.tenantId);
-	assertCanWrite(session, values.ownerType, survey);
+	const owner = resolveOwner(values.ownerType, values.ownerId, session.tenantId);
+	assertCanWrite(session, values.ownerType, owner);
 
 	const sameOwner = tenantAssets(session.tenantId).some(
 		(row) =>
@@ -362,8 +378,9 @@ export async function mockCompleteAsset(id: string, input: CompleteAssetInput): 
 	const session = requireTenantSession();
 	const values = parseInput(completeAssetSchema, input);
 	const row = findAssetRecord(id, session.tenantId);
-	const { survey } = resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId);
-	assertCanWrite(session, row.ownerType as AssetOwnerType, survey);
+	const ownerType = row.ownerType as AssetOwnerType;
+	const owner = resolveOwner(ownerType, row.ownerId, session.tenantId);
+	assertCanWrite(session, ownerType, owner);
 
 	if (row.uploadState === 'complete') {
 		if (values.sha256 === row.sha256) return toAsset(row);
@@ -414,8 +431,9 @@ export async function mockSetAssetState(id: string, input: AssetStateInput): Pro
 	const session = requireTenantSession();
 	const values = parseInput(assetStateSchema, input);
 	const row = findAssetRecord(id, session.tenantId);
-	const { survey } = resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId);
-	assertCanWrite(session, row.ownerType as AssetOwnerType, survey);
+	const ownerType = row.ownerType as AssetOwnerType;
+	const owner = resolveOwner(ownerType, row.ownerId, session.tenantId);
+	assertCanWrite(session, ownerType, owner);
 
 	const target = values.uploadState;
 	if (row.uploadState === 'complete') {
@@ -450,10 +468,8 @@ export async function mockSetAssetState(id: string, input: AssetStateInput): Pro
 export async function mockAssetSignedUrl(id: string): Promise<AssetSignedUrl> {
 	const session = requireTenantSession();
 	const row = findAssetRecord(id, session.tenantId);
-	assertCanRead(
-		session,
-		resolveOwner(row.ownerType as AssetOwnerType, row.ownerId, session.tenantId).survey
-	);
+	const ownerType = row.ownerType as AssetOwnerType;
+	assertCanRead(session, ownerType, resolveOwner(ownerType, row.ownerId, session.tenantId));
 	if (row.uploadState !== 'complete') {
 		throw stateConflict('The file is not ready to open yet.');
 	}

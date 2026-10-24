@@ -7,6 +7,7 @@ import { demoDays } from '$shared/data/demo-clock';
 import {
 	demoAssetId,
 	demoCustomerId,
+	demoDecorId,
 	demoProjectId,
 	demoPropertyId,
 	demoSurveyId,
@@ -14,7 +15,12 @@ import {
 	demoSurveyorId
 } from '$shared/data/demo-record-plan';
 import { DEMO_TENANTS, DEMO_USERS } from '$shared/data/demo-seed';
-import type { AppUserRecord, ProjectRecord, ProjectUserRecord } from '$shared/data/records';
+import type {
+	AppUserRecord,
+	DecorRecord,
+	ProjectRecord,
+	ProjectUserRecord
+} from '$shared/data/records';
 import { deterministicUuid } from '$shared/lib/deterministic';
 import type { SessionUser, TenantIdentity } from '$shared/domain/user';
 import { ApiError, ApiErrorCode, isApiError } from '$network/errors';
@@ -40,6 +46,7 @@ const OPULENT = DEMO_TENANTS[0];
 const SURVEYOR_EMAIL = 'surveyor@opulentinteriors.co.uk';
 const SURVEYOR_2_EMAIL = 'liam.oconnor@opulentinteriors.co.uk';
 const DESIGNER_EMAIL = 'designer@opulentinteriors.co.uk';
+const PURCHASING_EMAIL = 'purchasing@opulentinteriors.co.uk';
 const IN_PROGRESS = { projectN: 1, surveyN: 1 };
 const IN_PROGRESS_ID = demoSurveyId(IN_PROGRESS.projectN, IN_PROGRESS.surveyN);
 
@@ -148,6 +155,30 @@ function assignmentRecords(): ProjectUserRecord[] {
 	}));
 }
 
+/** Minimal decor rows: the decor owner lookup only needs tenant and id. */
+function decorRecords(): DecorRecord[] {
+	return [1, 2].map((n) => ({
+		id: demoDecorId(n),
+		tenantId: OPULENT.id,
+		collectionId: deterministicUuid(`material-collection:assets-test:${n}`),
+		caption: `Test decor ${n}`,
+		decorCode: `TST-${n}`,
+		textureSurface: null,
+		colourFamily: null,
+		materialType: 'melamine_board',
+		core: 'chipboard',
+		defaultThicknessMm: 18,
+		sheetSizeMm: { length: 2800, width: 2070 },
+		grainDirection: null,
+		premiumTier: 'standard',
+		status: 'active',
+		customerVisible: true,
+		sampleAssetId: null,
+		createdAt: demoDays(40),
+		updatedAt: demoDays(40)
+	}));
+}
+
 function installDemoWorld(): void {
 	setCollection(
 		COLLECTIONS.tenants,
@@ -159,6 +190,7 @@ function installDemoWorld(): void {
 	);
 	setCollection(COLLECTIONS.projects, projectRecords());
 	setCollection(COLLECTIONS.projectUsers, assignmentRecords());
+	setCollection(COLLECTIONS.decors, decorRecords());
 
 	const surveySeed = seedSurveys();
 	for (const [name, rows] of Object.entries(surveySeed)) {
@@ -244,6 +276,42 @@ describe('asset seed and listing', () => {
 		const page = await mockListAssets({});
 		expect(page.items.every((asset) => asset.id !== demoAssetId('live:kitchen:overview'))).toBe(
 			true
+		);
+	});
+});
+
+describe('decor sample assets', () => {
+	it('shows the decor sample only to a materials reader', async () => {
+		const surveyorPage = await mockListAssets({});
+		expect(surveyorPage.items.some((asset) => asset.ownerType === 'decor')).toBe(false);
+
+		signIn(DESIGNER_EMAIL);
+		const page = await mockListAssets({ ownerType: 'decor' });
+		expect(page.total).toBe(1);
+		expect(page.items[0].ownerId).toBe(demoDecorId(1));
+
+		const detail = await mockGetAsset(page.items[0].id);
+		expect(detail.caption?.startsWith('Placeholder')).toBe(true);
+	});
+
+	it('requires materials.update to attach a file to a decor', async () => {
+		signIn(PURCHASING_EMAIL);
+		const result = await mockInitAsset(initInput({ ownerType: 'decor', ownerId: demoDecorId(2) }));
+		expect(result.asset.ownerType).toBe('decor');
+		expect(result.asset.ownerId).toBe(demoDecorId(2));
+	});
+
+	it('keeps an unknown decor a 404 and a survey-only role forbidden', async () => {
+		signIn(PURCHASING_EMAIL);
+		await expectApiError(
+			mockInitAsset(initInput({ ownerType: 'decor', ownerId: demoDecorId(999) })),
+			ApiErrorCode.NOT_FOUND
+		);
+
+		signIn(SURVEYOR_EMAIL);
+		await expectApiError(
+			mockInitAsset(initInput({ ownerType: 'decor', ownerId: demoDecorId(2) })),
+			ApiErrorCode.FORBIDDEN
 		);
 	});
 });
