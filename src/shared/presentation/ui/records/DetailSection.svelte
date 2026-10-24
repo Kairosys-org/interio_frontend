@@ -27,7 +27,7 @@
 		<div class="flex min-w-0 flex-col gap-1">
 			<h2 class="text-title-3 text-ink">{title}</h2>
 			{#if description}
-				<p class="text-callout text-ink-secondary">{description}</p>
+				<p class="text-callout break-words text-ink-secondary">{description}</p>
 			{/if}
 		</div>
 

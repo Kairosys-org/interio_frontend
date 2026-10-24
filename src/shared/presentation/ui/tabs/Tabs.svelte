@@ -70,7 +70,7 @@
 	}
 </script>
 
-<div class={cn('flex flex-col', className)}>
+<div class={cn('flex min-w-0 flex-col', className)}>
 	<div
 		bind:this={tablistEl}
 		role="tablist"

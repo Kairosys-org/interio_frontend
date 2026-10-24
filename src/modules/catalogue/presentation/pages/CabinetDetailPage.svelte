@@ -252,7 +252,7 @@
 			<p class="text-callout text-critical-ink" role="alert">{error}</p>
 		{/if}
 
-		<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+		<div class="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
 			<Tabs label="Cabinet sections" {tabs} bind:value={tabValue} />
 			<div class="flex flex-wrap gap-2">
 				{#if tabValue === 'parameters'}
