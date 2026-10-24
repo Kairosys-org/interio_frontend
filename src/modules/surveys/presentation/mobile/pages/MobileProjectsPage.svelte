@@ -100,7 +100,7 @@
 			<li>
 				<EntityLink
 					{href}
-					class="flex min-h-target touch-manipulation flex-col gap-2 rounded-lg border border-hairline bg-canvas p-4 hover:bg-canvas-grouped"
+					class="flex min-h-target touch-manipulation flex-col items-stretch gap-2 rounded-lg border border-hairline bg-canvas p-4 hover:bg-canvas-grouped"
 				>
 					<span class="flex w-full flex-wrap items-start justify-between gap-2">
 						<span class="flex min-w-0 flex-col gap-0.5">

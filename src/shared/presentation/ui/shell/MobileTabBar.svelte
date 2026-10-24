@@ -43,12 +43,14 @@
 	<ul class="flex items-stretch justify-around">
 		{#each TABS as tab (tab.href)}
 			{@const active = isActive(tab.href)}
-			<li class="flex-1">
+			<li class="flex min-w-0 flex-1">
 				<a
 					href={resolve(tab.href as '/m/projects')}
 					aria-current={active ? 'page' : undefined}
+					aria-label={tab.label}
+					title={tab.label}
 					class={cn(
-						'flex min-h-target touch-manipulation flex-col items-center justify-center gap-1 px-2 py-2 text-caption',
+						'flex min-h-target min-w-0 touch-manipulation flex-col items-center justify-center gap-1 px-1 py-2 text-caption',
 						active ? 'bg-brand-soft text-brand' : 'text-ink-secondary'
 					)}
 				>
@@ -65,7 +67,7 @@
 							</span>
 						{/if}
 					</span>
-					<span>{tab.label}</span>
+					<span class="w-full truncate text-center">{tab.label}</span>
 				</a>
 			</li>
 		{/each}

@@ -293,7 +293,7 @@
 						<li class="flex items-center gap-2 rounded-lg border border-hairline bg-canvas">
 							<EntityLink
 								href={resolve(`/m/surveys/${survey.id}/rooms/${roomId}/walls/${wall.id}`)}
-								class="flex min-h-target flex-1 touch-manipulation flex-col gap-0.5 p-3 hover:bg-canvas-grouped"
+								class="flex min-h-target flex-1 touch-manipulation flex-col items-stretch gap-0.5 p-3 hover:bg-canvas-grouped"
 							>
 								<span class="text-callout text-ink">{wall.caption}</span>
 								<span class="text-footnote text-ink-secondary tabular-nums">
@@ -329,7 +329,7 @@
 						<li class="flex items-center gap-2 rounded-lg border border-hairline bg-canvas">
 							<EntityLink
 								href={resolve(`/m/surveys/${survey.id}/openings/${opening.id}`)}
-								class="flex min-h-target flex-1 touch-manipulation flex-col gap-0.5 p-3 hover:bg-canvas-grouped"
+								class="flex min-h-target flex-1 touch-manipulation flex-col items-stretch gap-0.5 p-3 hover:bg-canvas-grouped"
 							>
 								<span class="flex flex-wrap items-center gap-2">
 									<span class="text-callout text-ink">

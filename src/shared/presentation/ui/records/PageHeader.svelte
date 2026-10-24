@@ -21,8 +21,10 @@
 		<div>{@render breadcrumbs()}</div>
 	{/if}
 
-	<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-8">
-		<div class="flex min-w-0 flex-col gap-2">
+	<div
+		class="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between md:gap-8"
+	>
+		<div class="flex min-w-0 flex-1 basis-80 flex-col gap-2">
 			{#if eyebrow}
 				<p class="text-footnote text-ink-secondary">{eyebrow}</p>
 			{/if}
@@ -33,7 +35,7 @@
 		</div>
 
 		{#if actions}
-			<div class="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+			<div class="flex min-w-0 flex-wrap items-center gap-2 md:max-w-full md:justify-end">
 				{@render actions()}
 			</div>
 		{/if}

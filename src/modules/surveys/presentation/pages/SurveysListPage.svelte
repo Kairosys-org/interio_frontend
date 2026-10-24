@@ -434,13 +434,13 @@
 />
 
 <div class="flex flex-col gap-3 pt-6 pb-4">
-	<div class="flex flex-col gap-3 md:flex-row md:items-end">
+	<div class="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
 		<SearchInput
 			label="Search surveys"
 			bind:value={query}
 			placeholder="Caption, project, customer or surveyor"
 			onsearch={(value) => updateFilters({ q: value })}
-			class="md:flex-1"
+			class="md:min-w-64 md:flex-1"
 		/>
 
 		<Select

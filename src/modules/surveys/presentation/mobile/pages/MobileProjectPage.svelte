@@ -155,9 +155,9 @@
 				]}
 			/>
 			<p class="pt-3 text-footnote text-ink-secondary">
-				{loadedHub.assignments.length}
-				{loadedHub.assignments.length === 1 ? 'person' : 'people'} assigned ·
-				{formatCount(loadedHub.counts.surveys)} surveys
+				{`${formatCount(loadedHub.assignments.length)} ${
+					loadedHub.assignments.length === 1 ? 'person' : 'people'
+				} assigned · ${formatCount(surveys.length)} ${surveys.length === 1 ? 'survey' : 'surveys'}`}
 			</p>
 		</section>
 
@@ -194,7 +194,7 @@
 						<li>
 							<EntityLink
 								href={resolve(`/m/surveys/${survey.id}`)}
-								class="flex min-h-target touch-manipulation flex-col gap-1 rounded-lg border border-hairline bg-canvas p-4 hover:bg-canvas-grouped"
+								class="flex min-h-target touch-manipulation flex-col items-stretch gap-1 rounded-lg border border-hairline bg-canvas p-4 hover:bg-canvas-grouped"
 							>
 								<span class="flex w-full flex-wrap items-start justify-between gap-2">
 									<span class="text-headline break-words text-ink">{survey.caption}</span>

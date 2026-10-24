@@ -105,14 +105,14 @@
 		>
 			<a
 				{...{ href: resolve('/m/projects') }}
-				class="inline-flex min-h-target items-center gap-2 text-headline text-ink"
+				class="inline-flex min-h-target min-w-0 items-center gap-2 text-headline text-ink"
 			>
 				<span
-					class="inline-flex size-8 items-center justify-center rounded-md bg-brand text-on-brand"
+					class="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-brand text-on-brand"
 				>
 					I
 				</span>
-				<span>Interio Survey</span>
+				<span class="truncate">Interio Survey</span>
 			</a>
 			<SyncStatusChip
 				{online}
@@ -120,6 +120,7 @@
 				conflicts={counts?.conflict ?? 0}
 				uploading={counts?.sending ?? 0}
 				href={resolve('/m/sync')}
+				class="shrink-0"
 			/>
 		</header>
 
