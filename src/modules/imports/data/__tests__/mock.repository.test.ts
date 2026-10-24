@@ -27,6 +27,7 @@ import type {
 } from '$shared/data/records';
 import type { SessionUser, TenantIdentity } from '$shared/domain/user';
 import { isUuid } from '$shared/domain/uuid';
+import { deterministicUuid } from '$shared/lib/deterministic';
 import { ApiError } from '$network/errors';
 import { getCollection, resetMockDb, setCollection, updateCollection } from '$network/mock-backend';
 import type { CreateImportInput } from '../../domain/types';
@@ -761,5 +762,141 @@ describe('tenant isolation and permissions', () => {
 		const batch = await mockCreateImport(createInput());
 		expect(batchRecord(batch.id)?.tenantId).toBe(OPULENT.id);
 		expect(batchRecord(batch.id)?.tenantId).not.toBe(HARBOUR.id);
+	});
+});
+
+describe('supplier and decor imports', () => {
+	const MANUFACTURER_ID = deterministicUuid('imports-test:manufacturer');
+	const COLLECTION_ID = deterministicUuid('imports-test:collection');
+	const EXISTING_DECOR_ID = deterministicUuid('imports-test:decor');
+
+	function installMaterials(): void {
+		setCollection(COLLECTIONS.manufacturers, [
+			{
+				id: MANUFACTURER_ID,
+				tenantId: OPULENT.id,
+				caption: 'Egger',
+				country: 'Austria',
+				website: null,
+				active: true,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			}
+		]);
+		setCollection(COLLECTIONS.materialCollections, [
+			{
+				id: COLLECTION_ID,
+				tenantId: OPULENT.id,
+				manufacturerId: MANUFACTURER_ID,
+				caption: 'Classic',
+				active: true,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			}
+		]);
+		setCollection(COLLECTIONS.decors, [
+			{
+				id: EXISTING_DECOR_ID,
+				tenantId: OPULENT.id,
+				collectionId: COLLECTION_ID,
+				caption: 'Existing oak',
+				decorCode: 'ABC-1',
+				textureSurface: null,
+				colourFamily: 'brown',
+				materialType: 'melamine_board',
+				core: 'chipboard',
+				defaultThicknessMm: 18,
+				sheetSizeMm: { length: 2800, width: 2070 },
+				grainDirection: null,
+				premiumTier: 'standard',
+				status: 'active',
+				customerVisible: true,
+				sampleAssetId: null,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			}
+		]);
+	}
+
+	it('creates suppliers and flags a name clash without merging', async () => {
+		signIn(OWNER);
+		setCollection(COLLECTIONS.suppliers, [
+			{
+				id: deterministicUuid('imports-test:supplier'),
+				tenantId: OPULENT.id,
+				caption: 'Hafele UK',
+				contact: 'orders@hafele.example',
+				leadTimeDays: 10,
+				active: true,
+				createdAt: new Date().toISOString(),
+				updatedAt: new Date().toISOString()
+			}
+		]);
+
+		const batch = await mockCreateImport({
+			kind: 'supplier',
+			fileName: 'suppliers.csv',
+			csvText: [
+				'caption,contact,lead_time_days',
+				'Blum UK,orders@blum.example,7',
+				'Hafele UK,orders@hafele.example,10'
+			].join('\n'),
+			columnMap: { caption: 'caption', contact: 'contact', lead_time_days: 'lead_time_days' }
+		});
+		expect(batch).toMatchObject({ readyRows: 1, reviewRows: 1, rejectedRows: 0 });
+
+		const result = await mockCommitImport(batch.id);
+		expect(result).toMatchObject({ created: 1, held: 1, rejected: 0 });
+
+		const suppliers = getCollection<{ caption: string; tenantId: string }>(
+			COLLECTIONS.suppliers
+		).filter((row) => row.tenantId === OPULENT.id);
+		expect(suppliers.map((row) => row.caption)).toEqual(['Hafele UK', 'Blum UK', 'Hafele UK']);
+
+		const audit = await mockListImportAudit(batch.id);
+		expect(audit.some((row) => row.action === 'create')).toBe(true);
+	});
+
+	it('creates decors inside an existing collection and rejects bad codes', async () => {
+		signIn(OWNER);
+		installMaterials();
+
+		const batch = await mockCreateImport({
+			kind: 'decor',
+			fileName: 'decors.csv',
+			csvText: [
+				'manufacturer,collection,caption,decor_code,material_type,customer_visible',
+				'Egger,Classic,Smoked oak,OAK-1,veneer,yes',
+				'Egger,Classic,Copy of existing,ABC-1,melamine_board,no',
+				'Unknown,Classic,Orphan,ORP-1,melamine_board,yes'
+			].join('\n'),
+			columnMap: {
+				manufacturer: 'manufacturer',
+				collection: 'collection',
+				caption: 'caption',
+				decor_code: 'decor_code',
+				material_type: 'material_type',
+				customer_visible: 'customer_visible'
+			}
+		});
+		expect(batch).toMatchObject({ readyRows: 1, reviewRows: 0, rejectedRows: 2 });
+
+		const result = await mockCommitImport(batch.id);
+		expect(result).toMatchObject({ created: 1, held: 0, rejected: 2 });
+
+		const decors = getCollection<{
+			id: string;
+			collectionId: string;
+			decorCode: string;
+			materialType: string;
+			customerVisible: boolean;
+		}>(COLLECTIONS.decors).filter((row) => row.id !== EXISTING_DECOR_ID);
+		expect(decors).toHaveLength(1);
+		expect(decors[0]).toMatchObject({
+			collectionId: COLLECTION_ID,
+			decorCode: 'OAK-1',
+			materialType: 'veneer',
+			customerVisible: true
+		});
 	});
 });

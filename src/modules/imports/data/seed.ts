@@ -53,7 +53,13 @@ const CONTEXT: ImportMatchContext = {
 		propertyId: demoPropertyId(plan.propertyN),
 		projectType: plan.projectType,
 		caption: plan.caption
-	}))
+	})),
+	// No seeded batch imports suppliers or decors yet; the catalogues are
+	// seeded by their own modules and never read from another seeder.
+	suppliers: [],
+	manufacturers: [],
+	collections: [],
+	decors: []
 };
 
 const CUSTOMER_CSV = [

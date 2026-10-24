@@ -15,13 +15,18 @@ import type { ImportBatch, ImportKind } from '../domain/types';
 export const IMPORT_KIND_LABELS: Readonly<Record<ImportKind, string>> = Object.freeze({
 	customer: 'Customers',
 	property: 'Properties',
-	project: 'Projects'
+	project: 'Projects',
+	supplier: 'Suppliers',
+	decor: 'Decors'
 });
 
 export const IMPORT_KIND_DESCRIPTIONS: Readonly<Record<ImportKind, string>> = Object.freeze({
 	customer: 'Create customer records with contact details, address and preferred channel.',
 	property: 'Create properties for customers who already exist, matched by email address.',
-	project: 'Create projects for an existing customer and property, with a project type.'
+	project: 'Create projects for an existing customer and property, with a project type.',
+	supplier: 'Create suppliers with contact details and lead time; name clashes are flagged.',
+	decor:
+		'Create decors inside an existing manufacturer collection, with codes and material details.'
 });
 
 const EM_DASH = '\u2014';
@@ -72,6 +77,24 @@ export function rowValues(kind: ImportKind, payload: Readonly<Record<string, str
 			secondary:
 				joined([payload.address_line2, payload.town, payload.postcode]) ??
 				joined([payload.customer_email])
+		};
+	}
+
+	if (kind === 'supplier') {
+		const lead = text(payload.lead_time_days);
+		return {
+			primary: valueOrDash(payload.caption),
+			secondary: joined([payload.contact, lead.length > 0 ? `${lead} day lead time` : undefined])
+		};
+	}
+
+	if (kind === 'decor') {
+		return {
+			primary: valueOrDash(payload.caption),
+			secondary: joined([
+				payload.decor_code,
+				joined([payload.manufacturer, payload.collection], ' / ') ?? undefined
+			])
 		};
 	}
 

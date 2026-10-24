@@ -8,11 +8,21 @@ import {
 	propertyMatchReasons
 } from '$shared/domain/dedup';
 import {
+	DECOR_COLOUR_FAMILIES,
+	DECOR_CORES,
+	DECOR_MATERIAL_TYPES,
+	GRAIN_DIRECTIONS,
 	PREFERRED_CHANNELS,
+	PREMIUM_TIERS,
 	PROJECT_TYPES,
+	type DecorColourFamily,
+	type DecorCore,
+	type DecorMaterialType,
+	type GrainDirection,
 	type ImportKind,
 	type ImportValidation,
 	type PreferredChannel,
+	type PremiumTier,
 	type ProjectType
 } from '$shared/domain/record-states';
 
@@ -161,10 +171,34 @@ const PROJECT_FIELDS: readonly ImportField[] = [
 	{ key: 'project_type', label: 'Project type', required: true }
 ];
 
+const SUPPLIER_FIELDS: readonly ImportField[] = [
+	{ key: 'caption', label: 'Supplier name', required: true },
+	{ key: 'contact', label: 'Contact', required: false },
+	{ key: 'lead_time_days', label: 'Lead time (days)', required: false }
+];
+
+const DECOR_FIELDS: readonly ImportField[] = [
+	{ key: 'manufacturer', label: 'Manufacturer', required: true },
+	{ key: 'collection', label: 'Collection', required: true },
+	{ key: 'caption', label: 'Decor name', required: true },
+	{ key: 'decor_code', label: 'Decor code', required: true },
+	{ key: 'colour_family', label: 'Colour family', required: false },
+	{ key: 'material_type', label: 'Material type', required: false },
+	{ key: 'core', label: 'Core', required: false },
+	{ key: 'thickness_mm', label: 'Thickness (mm)', required: false },
+	{ key: 'sheet_length_mm', label: 'Sheet length (mm)', required: false },
+	{ key: 'sheet_width_mm', label: 'Sheet width (mm)', required: false },
+	{ key: 'grain_direction', label: 'Grain direction', required: false },
+	{ key: 'premium_tier', label: 'Premium tier', required: false },
+	{ key: 'customer_visible', label: 'Customer visible', required: false }
+];
+
 export const IMPORT_FIELDS: Readonly<Record<ImportKind, readonly ImportField[]>> = Object.freeze({
 	customer: CUSTOMER_FIELDS,
 	property: PROPERTY_FIELDS,
-	project: PROJECT_FIELDS
+	project: PROJECT_FIELDS,
+	supplier: SUPPLIER_FIELDS,
+	decor: DECOR_FIELDS
 });
 
 /* ------------------------------------------------------------------ */
@@ -211,6 +245,24 @@ const KIND_ALIASES: Readonly<Record<ImportKind, Readonly<Record<string, readonly
 		property_address: ['property', 'site_address', 'address'],
 		caption: ['name', 'project_name', 'title', 'job_name'],
 		project_type: ['type', 'job_type', 'category']
+	},
+	supplier: {
+		caption: ['name', 'supplier_name', 'vendor', 'supplier'],
+		contact: ['contact_name', 'contact_details', 'email', 'phone', 'telephone'],
+		lead_time_days: ['lead_time', 'leadtime', 'lead_days', 'days']
+	},
+	decor: {
+		manufacturer: ['manufacturer_name', 'brand', 'maker'],
+		collection: ['collection_name', 'range', 'series'],
+		caption: ['name', 'decor_name', 'colour', 'color'],
+		decor_code: ['code', 'decor_ref', 'reference', 'sku'],
+		colour_family: ['colour', 'color', 'colour_group', 'color_group'],
+		material_type: ['material', 'decor_type'],
+		thickness_mm: ['thickness', 'thickness_millimetres'],
+		sheet_length_mm: ['sheet_length', 'length_mm', 'length'],
+		sheet_width_mm: ['sheet_width', 'width_mm', 'width'],
+		premium_tier: ['tier'],
+		customer_visible: ['visible', 'customer_facing', 'show_customer']
 	}
 };
 
@@ -277,11 +329,39 @@ export interface ImportProjectMatch {
 	caption: string;
 }
 
+export interface ImportSupplierMatch {
+	id: Uuid;
+	caption: string;
+	contact: string | null;
+}
+
+export interface ImportManufacturerMatch {
+	id: Uuid;
+	caption: string;
+}
+
+export interface ImportCollectionMatch {
+	id: Uuid;
+	manufacturerId: Uuid;
+	caption: string;
+}
+
+export interface ImportDecorMatch {
+	id: Uuid;
+	collectionId: Uuid;
+	caption: string;
+	decorCode: string;
+}
+
 /** Tenant-scoped records the validator may match against (never storage). */
 export interface ImportMatchContext {
 	customers: readonly ImportCustomerMatch[];
 	properties: readonly ImportPropertyMatch[];
 	projects: readonly ImportProjectMatch[];
+	suppliers: readonly ImportSupplierMatch[];
+	manufacturers: readonly ImportManufacturerMatch[];
+	collections: readonly ImportCollectionMatch[];
+	decors: readonly ImportDecorMatch[];
 }
 
 export interface ParsedImportRow {
@@ -376,10 +456,131 @@ export function validateImportRows(
 			}
 		}
 
-		const emailField = kind === 'customer' ? 'email' : 'customer_email';
-		const email = trimmed(payload, emailField);
+		const emailField =
+			kind === 'customer'
+				? 'email'
+				: kind === 'supplier' || kind === 'decor'
+					? ''
+					: 'customer_email';
+		const email = emailField.length > 0 ? trimmed(payload, emailField) : '';
 		if (email.length > 0 && !EMAIL_PATTERN.test(email)) {
 			return reject(rowNo, payload, 'Enter a valid email address.');
+		}
+
+		if (kind === 'supplier') {
+			const caption = trimmed(payload, 'caption');
+			const contact = nullish(trimmed(payload, 'contact'));
+			const leadTime = trimmed(payload, 'lead_time_days');
+			if (leadTime.length > 0) {
+				const days = Number(leadTime);
+				if (!Number.isInteger(days) || days < 0 || days > 365) {
+					return reject(
+						rowNo,
+						payload,
+						'Lead time must be a whole number of days between 0 and 365.'
+					);
+				}
+			}
+
+			const match = context.suppliers.find(
+				(supplier) =>
+					normaliseCaption(supplier.caption) === normaliseCaption(caption) ||
+					(contact !== null &&
+						supplier.contact !== null &&
+						normaliseCaption(supplier.contact) === normaliseCaption(contact))
+			);
+			return readyOrReview(rowNo, payload, match?.id ?? null);
+		}
+
+		if (kind === 'decor') {
+			const manufacturerName = trimmed(payload, 'manufacturer');
+			const manufacturer = context.manufacturers.find(
+				(candidate) => normaliseCaption(candidate.caption) === normaliseCaption(manufacturerName)
+			);
+			if (!manufacturer) {
+				return reject(rowNo, payload, 'No manufacturer matches that name.');
+			}
+
+			const collectionName = trimmed(payload, 'collection');
+			const collection = context.collections.find(
+				(candidate) =>
+					candidate.manufacturerId === manufacturer.id &&
+					normaliseCaption(candidate.caption) === normaliseCaption(collectionName)
+			);
+			if (!collection) {
+				return reject(rowNo, payload, 'No collection matches that name for the manufacturer.');
+			}
+
+			const code = trimmed(payload, 'decor_code');
+			const codeTaken = context.decors.some(
+				(candidate) =>
+					candidate.collectionId === collection.id &&
+					normaliseCaption(candidate.decorCode) === normaliseCaption(code)
+			);
+			if (codeTaken) {
+				return reject(rowNo, payload, 'A decor with that code already exists in this collection.');
+			}
+
+			const colour = trimmed(payload, 'colour_family').toLowerCase();
+			if (colour.length > 0 && !DECOR_COLOUR_FAMILIES.includes(colour as DecorColourFamily)) {
+				return reject(
+					rowNo,
+					payload,
+					`Choose a colour family: ${DECOR_COLOUR_FAMILIES.join(', ')}.`
+				);
+			}
+
+			const material = trimmed(payload, 'material_type').toLowerCase();
+			if (material.length > 0 && !DECOR_MATERIAL_TYPES.includes(material as DecorMaterialType)) {
+				return reject(
+					rowNo,
+					payload,
+					`Choose a material type: ${DECOR_MATERIAL_TYPES.join(', ')}.`
+				);
+			}
+
+			const core = trimmed(payload, 'core').toLowerCase();
+			if (core.length > 0 && !DECOR_CORES.includes(core as DecorCore)) {
+				return reject(rowNo, payload, `Choose a core: ${DECOR_CORES.join(', ')}.`);
+			}
+
+			const grain = trimmed(payload, 'grain_direction').toLowerCase();
+			if (grain.length > 0 && !GRAIN_DIRECTIONS.includes(grain as GrainDirection)) {
+				return reject(rowNo, payload, `Choose a grain direction: ${GRAIN_DIRECTIONS.join(', ')}.`);
+			}
+
+			const tier = trimmed(payload, 'premium_tier').toLowerCase();
+			if (tier.length > 0 && !PREMIUM_TIERS.includes(tier as PremiumTier)) {
+				return reject(rowNo, payload, `Choose a premium tier: ${PREMIUM_TIERS.join(', ')}.`);
+			}
+
+			const thickness = trimmed(payload, 'thickness_mm');
+			if (thickness.length > 0) {
+				const value = Number(thickness);
+				if (!Number.isFinite(value) || value <= 0 || value > 100) {
+					return reject(rowNo, payload, 'Thickness must be between 1 and 100 mm.');
+				}
+			}
+
+			for (const key of ['sheet_length_mm', 'sheet_width_mm'] as const) {
+				const raw = trimmed(payload, key);
+				if (raw.length === 0) continue;
+				const value = Number(raw);
+				if (!Number.isFinite(value) || value <= 0 || value > 10_000) {
+					return reject(rowNo, payload, 'Sheet sizes must be between 1 and 10000 mm.');
+				}
+			}
+
+			const visible = trimmed(payload, 'customer_visible').toLowerCase();
+			if (visible.length > 0 && !['true', 'false', 'yes', 'no', '1', '0'].includes(visible)) {
+				return reject(rowNo, payload, 'Customer visible must be yes or no.');
+			}
+
+			const match = context.decors.find(
+				(candidate) =>
+					normaliseCaption(candidate.caption) === normaliseCaption(trimmed(payload, 'caption'))
+			);
+			return readyOrReview(rowNo, payload, match?.id ?? null);
 		}
 
 		if (kind === 'customer') {

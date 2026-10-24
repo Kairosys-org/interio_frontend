@@ -42,7 +42,11 @@ const CONTEXT: ImportMatchContext = {
 			projectType: 'kitchen',
 			caption: 'Kitchen renovation'
 		}
-	]
+	],
+	suppliers: [],
+	manufacturers: [],
+	collections: [],
+	decors: []
 };
 
 const CUSTOMER_MAP = {

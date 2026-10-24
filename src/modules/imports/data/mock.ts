@@ -4,10 +4,14 @@ import { COLLECTIONS } from '$shared/data/collections';
 import { requireTenantSession } from '$shared/data/mock-session';
 import type {
 	CustomerRecord,
+	DecorRecord,
 	ImportBatchRecord,
 	ImportRowRecord,
+	ManufacturerRecord,
+	MaterialCollectionRecord,
 	ProjectRecord,
 	PropertyRecord,
+	SupplierRecord,
 	TenantRecord
 } from '$shared/data/records';
 import type { AuditTrailRow } from '$shared/domain/audit';
@@ -22,10 +26,20 @@ import {
 import { toPage } from '$shared/domain/pagination';
 import { PERMISSIONS } from '$shared/domain/permissions';
 import {
+	DECOR_COLOUR_FAMILIES,
+	DECOR_CORES,
+	DECOR_MATERIAL_TYPES,
+	GRAIN_DIRECTIONS,
 	PREFERRED_CHANNELS,
+	PREMIUM_TIERS,
+	type DecorColourFamily,
+	type DecorCore,
+	type DecorMaterialType,
+	type GrainDirection,
 	type ImportOutcome,
 	type ImportValidation,
 	type PreferredChannel,
+	type PremiumTier,
 	type ProjectType
 } from '$shared/domain/record-states';
 import type { Uuid } from '$shared/domain/uuid';
@@ -141,6 +155,29 @@ function liveProjects(tenantId: Uuid): ProjectRecord[] {
 	);
 }
 
+/** Master data is matched across every status: a code stays unique forever. */
+function tenantSuppliers(tenantId: Uuid): SupplierRecord[] {
+	return getCollection<SupplierRecord>(COLLECTIONS.suppliers).filter(
+		(row) => row.tenantId === tenantId
+	);
+}
+
+function tenantManufacturers(tenantId: Uuid): ManufacturerRecord[] {
+	return getCollection<ManufacturerRecord>(COLLECTIONS.manufacturers).filter(
+		(row) => row.tenantId === tenantId
+	);
+}
+
+function tenantCollections(tenantId: Uuid): MaterialCollectionRecord[] {
+	return getCollection<MaterialCollectionRecord>(COLLECTIONS.materialCollections).filter(
+		(row) => row.tenantId === tenantId
+	);
+}
+
+function tenantDecors(tenantId: Uuid): DecorRecord[] {
+	return getCollection<DecorRecord>(COLLECTIONS.decors).filter((row) => row.tenantId === tenantId);
+}
+
 /** Mutable context so rows created earlier in the same commit are visible. */
 type MutableContext = {
 	[K in keyof ImportMatchContext]: Array<ImportMatchContext[K][number]>;
@@ -166,6 +203,26 @@ function buildContext(tenantId: Uuid): MutableContext {
 			propertyId: row.propertyId,
 			projectType: row.projectType,
 			caption: row.caption
+		})),
+		suppliers: tenantSuppliers(tenantId).map((row) => ({
+			id: row.id,
+			caption: row.caption,
+			contact: row.contact
+		})),
+		manufacturers: tenantManufacturers(tenantId).map((row) => ({
+			id: row.id,
+			caption: row.caption
+		})),
+		collections: tenantCollections(tenantId).map((row) => ({
+			id: row.id,
+			manufacturerId: row.manufacturerId,
+			caption: row.caption
+		})),
+		decors: tenantDecors(tenantId).map((row) => ({
+			id: row.id,
+			collectionId: row.collectionId,
+			caption: row.caption,
+			decorCode: row.decorCode
 		}))
 	};
 }
@@ -386,6 +443,8 @@ class Committer {
 	readonly customers: CustomerRecord[] = [];
 	readonly properties: PropertyRecord[] = [];
 	readonly projects: ProjectRecord[] = [];
+	readonly suppliers: SupplierRecord[] = [];
+	readonly decors: DecorRecord[] = [];
 	readonly rows = new Map<Uuid, RowOutcome>();
 	imported = 0;
 	held = 0;
@@ -425,6 +484,10 @@ class Committer {
 				return this.createProperty(row);
 			case 'project':
 				return this.createProject(row);
+			case 'supplier':
+				return this.createSupplier(row);
+			case 'decor':
+				return this.createDecor(row);
 			case 'customer':
 			default:
 				return this.createCustomer(row);
@@ -599,6 +662,154 @@ class Committer {
 			error: null
 		};
 	}
+
+	private matchSupplier(caption: string, contact: string | null): Uuid | null {
+		const match = this.context.suppliers.find(
+			(candidate) =>
+				normaliseText(candidate.caption) === normaliseText(caption) ||
+				(contact !== null &&
+					candidate.contact !== null &&
+					normaliseText(candidate.contact) === normaliseText(contact))
+		);
+		return match?.id ?? null;
+	}
+
+	/** A supplier is always created; a name clash is reported, never merged. */
+	private createSupplier(row: ImportRowRecord): RowOutcome {
+		const caption = text(row.payload.caption);
+		const contact = optionalText(row.payload.contact);
+		const leadRaw = text(row.payload.lead_time_days);
+		const leadTimeDays = leadRaw.length > 0 ? Number(leadRaw) : null;
+		const matchId = this.matchSupplier(caption, contact);
+
+		const record: SupplierRecord = {
+			id: newUuid(),
+			tenantId: this.tenantId,
+			caption,
+			contact,
+			leadTimeDays,
+			active: true,
+			createdAt: this.now,
+			updatedAt: this.now
+		};
+		this.suppliers.push(record);
+		this.context.suppliers.push({ id: record.id, caption, contact });
+
+		return {
+			outcome: matchId ? 'needs_review' : 'imported',
+			entityType: 'supplier',
+			entityId: record.id,
+			error: null
+		};
+	}
+
+	private createDecor(row: ImportRowRecord): RowOutcome {
+		const manufacturerName = text(row.payload.manufacturer);
+		const manufacturer = this.context.manufacturers.find(
+			(candidate) => normaliseText(candidate.caption) === normaliseText(manufacturerName)
+		);
+		const collection =
+			manufacturer === undefined
+				? undefined
+				: this.context.collections.find(
+						(candidate) =>
+							candidate.manufacturerId === manufacturer.id &&
+							normaliseText(candidate.caption) === normaliseText(row.payload.collection)
+					);
+		if (!manufacturer || !collection) {
+			return {
+				outcome: 'needs_review',
+				entityType: null,
+				entityId: null,
+				error: 'The manufacturer or collection for this row could not be found at commit.'
+			};
+		}
+
+		const decorCode = text(row.payload.decor_code);
+		const codeTaken = this.context.decors.some(
+			(candidate) =>
+				candidate.collectionId === collection.id &&
+				normaliseText(candidate.decorCode) === normaliseText(decorCode)
+		);
+		if (codeTaken) {
+			return {
+				outcome: 'needs_review',
+				entityType: null,
+				entityId: null,
+				error: 'A decor with that code already exists in this collection.'
+			};
+		}
+
+		const caption = text(row.payload.caption);
+		const matchId =
+			this.context.decors.find(
+				(candidate) => normaliseText(candidate.caption) === normaliseText(caption)
+			)?.id ?? null;
+
+		const thickness = text(row.payload.thickness_mm);
+		const sheetLength = text(row.payload.sheet_length_mm);
+		const sheetWidth = text(row.payload.sheet_width_mm);
+		const visible = text(row.payload.customer_visible).toLowerCase();
+
+		const record: DecorRecord = {
+			id: newUuid(),
+			tenantId: this.tenantId,
+			collectionId: collection.id,
+			caption,
+			decorCode,
+			textureSurface: null,
+			colourFamily: pickEnum(
+				row.payload.colour_family,
+				DECOR_COLOUR_FAMILIES,
+				null
+			) as DecorColourFamily | null,
+			materialType: (pickEnum(row.payload.material_type, DECOR_MATERIAL_TYPES, 'melamine_board') ??
+				'melamine_board') as DecorMaterialType,
+			core: (pickEnum(row.payload.core, DECOR_CORES, 'chipboard') ?? 'chipboard') as DecorCore,
+			defaultThicknessMm: thickness.length > 0 ? Number(thickness) : 18,
+			sheetSizeMm: {
+				length: sheetLength.length > 0 ? Number(sheetLength) : 2800,
+				width: sheetWidth.length > 0 ? Number(sheetWidth) : 2070
+			},
+			grainDirection: pickEnum(
+				row.payload.grain_direction,
+				GRAIN_DIRECTIONS,
+				null
+			) as GrainDirection | null,
+			premiumTier: (pickEnum(row.payload.premium_tier, PREMIUM_TIERS, 'standard') ??
+				'standard') as PremiumTier,
+			status: 'active',
+			customerVisible: visible.length === 0 || ['true', 'yes', '1'].includes(visible),
+			sampleAssetId: null,
+			createdAt: this.now,
+			updatedAt: this.now
+		};
+
+		this.decors.push(record);
+		this.context.decors.push({
+			id: record.id,
+			collectionId: record.collectionId,
+			caption: record.caption,
+			decorCode: record.decorCode
+		});
+
+		return {
+			outcome: matchId ? 'needs_review' : 'imported',
+			entityType: 'decor',
+			entityId: record.id,
+			error: null
+		};
+	}
+}
+
+/** Case-insensitive enum parse with a documented fallback. */
+function pickEnum<T extends string>(
+	value: string | undefined,
+	allowed: readonly T[],
+	fallback: T | null
+): T | null {
+	const candidate = (value ?? '').trim().toLowerCase();
+	return (allowed as readonly string[]).includes(candidate) ? (candidate as T) : fallback;
 }
 
 function normaliseText(value: string | null | undefined): string {
@@ -719,6 +930,18 @@ export async function mockCommitImport(id: Uuid): Promise<ImportCommitResult> {
 			...committer.projects
 		]);
 	}
+	if (committer.suppliers.length > 0) {
+		updateCollection<SupplierRecord>(COLLECTIONS.suppliers, (existing) => [
+			...existing,
+			...committer.suppliers
+		]);
+	}
+	if (committer.decors.length > 0) {
+		updateCollection<DecorRecord>(COLLECTIONS.decors, (existing) => [
+			...existing,
+			...committer.decors
+		]);
+	}
 	updateCollection<ImportRowRecord>(COLLECTIONS.importRows, (existing) =>
 		existing.map((row) => updatedRows.find((updated) => updated.id === row.id) ?? row)
 	);
@@ -737,6 +960,26 @@ export async function mockCommitImport(id: Uuid): Promise<ImportCommitResult> {
 			rejected: committer.rejected
 		}
 	});
+
+	// Master-data creates are audited individually as well as through the batch.
+	for (const supplier of committer.suppliers) {
+		recordTenantAudit({
+			tenantId,
+			action: 'create',
+			subjectType: 'supplier',
+			subjectId: supplier.id,
+			payload: { source: 'import', batchId: updatedBatch.id }
+		});
+	}
+	for (const decor of committer.decors) {
+		recordTenantAudit({
+			tenantId,
+			action: 'create',
+			subjectType: 'decor',
+			subjectId: decor.id,
+			payload: { source: 'import', batchId: updatedBatch.id }
+		});
+	}
 
 	return {
 		batch: toBatch(updatedBatch),

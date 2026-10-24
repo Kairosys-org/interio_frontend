@@ -34,7 +34,7 @@ export const PROJECT_TYPES = [
 ] as const;
 export type ProjectType = (typeof PROJECT_TYPES)[number];
 
-export const IMPORT_KINDS = ['customer', 'property', 'project'] as const;
+export const IMPORT_KINDS = ['customer', 'property', 'project', 'supplier', 'decor'] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 
 export const IMPORT_STATUSES = ['staged', 'committed', 'cancelled'] as const;

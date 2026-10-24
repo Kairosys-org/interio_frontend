@@ -14,7 +14,7 @@ describe('importStageSchema', () => {
 	});
 
 	it('rejects an unknown kind', () => {
-		const parsed = importStageSchema.safeParse({ ...valid, kind: 'supplier' });
+		const parsed = importStageSchema.safeParse({ ...valid, kind: 'price_list' });
 		expect(parsed.success).toBe(false);
 	});
 

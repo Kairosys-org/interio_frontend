@@ -2,6 +2,7 @@
 	import { CircleAlert } from '@lucide/svelte';
 	import { isApiError } from '$network/errors';
 	import { customersApi } from '$modules/customers/data/api';
+	import { materialsApi } from '$modules/materials/data/api';
 	import { projectsApi } from '$modules/projects/data/api';
 	import { propertiesApi } from '$modules/properties/data/api';
 	import { formatCount } from '$shared/lib/format';
@@ -83,13 +84,39 @@
 	 * mock server does when it validates a staged batch.
 	 */
 	async function buildContext(): Promise<ImportMatchContext> {
-		const [customerPage, propertyPage, projectPage] = await Promise.all([
-			customersApi.list({ pageSize: CONTEXT_PAGE_SIZE }),
-			propertiesApi.list({ pageSize: CONTEXT_PAGE_SIZE }),
-			projectsApi.list({ pageSize: CONTEXT_PAGE_SIZE })
-		]);
+		const [customerPage, propertyPage, projectPage, supplierPage, decorPage, manufacturerTree] =
+			await Promise.all([
+				customersApi.list({ pageSize: CONTEXT_PAGE_SIZE }),
+				propertiesApi.list({ pageSize: CONTEXT_PAGE_SIZE }),
+				projectsApi.list({ pageSize: CONTEXT_PAGE_SIZE }),
+				kind === 'supplier' ? materialsApi.listSuppliers({ pageSize: CONTEXT_PAGE_SIZE }) : null,
+				kind === 'decor' ? materialsApi.listDecors({ pageSize: CONTEXT_PAGE_SIZE }) : null,
+				kind === 'decor' ? materialsApi.listManufacturers() : null
+			]);
 
 		return {
+			suppliers: (supplierPage?.items ?? []).map((row) => ({
+				id: row.id,
+				caption: row.caption,
+				contact: row.contact
+			})),
+			manufacturers: (manufacturerTree ?? []).map((node) => ({
+				id: node.manufacturer.id,
+				caption: node.manufacturer.caption
+			})),
+			collections: (manufacturerTree ?? []).flatMap((node) =>
+				node.collections.map((entry) => ({
+					id: entry.collection.id,
+					manufacturerId: node.manufacturer.id,
+					caption: entry.collection.caption
+				}))
+			),
+			decors: (decorPage?.items ?? []).map((row) => ({
+				id: row.id,
+				collectionId: row.collectionId,
+				caption: row.caption,
+				decorCode: row.decorCode
+			})),
 			customers: customerPage.items
 				.filter((row) => row.state !== 'archived' && row.state !== 'cancelled')
 				.map((row) => ({
