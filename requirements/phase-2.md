@@ -1,6 +1,6 @@
 # Phase 2 — Survey: web review, mobile capture, offline sync
 
-> **Status:** not started · created 2026-10-22
+> **Status:** completed · 2026-10-24 · gate green (check, lint, arch:check, unit, e2e, build)
 > **Depends on:** phase-1 · **Unlocks:** 3–7 (Design consumes G1/G8; Catalogue is independent after 0/1)
 > **Spec map:** `spec.md` Part 12 §1 "1c — Survey assignment + web", "1d — Survey mobile", "1e — Survey governance"; Part 9 in full (field-level capture, §13 offline, §14 checklist); Part 11 §4.3 + §5; Part 10 §7, §8, §24; Part 5 `survey_*` + `asset` entities; Part 4 §2 (survey machine) and §12 (asset upload); gate **G8**; Part 13 FT-M3-01…05, C-02, C-07.
 > **Read with:** `spec.md` Part 9 in full, Part 10 §7–§8 + §24, Part 11 §4.3 + §5, Part 4 §2 + §12, Part 5 `survey_room`/`survey_wall`/`survey_opening`/`survey_utility`/`survey_obstacle`/`survey_measurement`/`survey_note`/`asset`, Part 13 §3 (M3); `DESIGN.md` §1.4 (mobile instrument), §3.7 + Appendix B, §5.5, §9.2 (`DimensionField`, `ChecklistDrawer`, `EvidenceUploader`, `SyncStatusChip`), §10.2, §11, §12, §13.4 (offline/conflict copy), §15; `ui-ux.md` §6–§7, §9, §13, §16–§17; `standards/architecture.md` §3–§4, §10, §13, §20–§22; `testing/ui-ux-tester.md`.
@@ -186,18 +186,18 @@ Commit order: domain/data → offline/outbox → shared UI → mobile pages/rout
 
 ## 8. Done when
 
-- [ ] A Surveyor can open `/m/projects` (assigned only), open a survey, capture rooms/walls/openings/utilities/obstacles/measurements/notes/media **with the network offline**, see queued chips, reconnect, and watch the outbox drain.
-- [ ] Conflict path: a server-side change produces a conflict row, the side-by-side sheet shows both values, server wins, and re-apply works.
-- [ ] Submit is blocked with a named reason when a room lacks ceiling height, a length/width pair is missing, an opening has no dims or the checklist is incomplete; it succeeds when all pass.
-- [ ] G8: verify is blocked while any manufacturing-critical measurement is unverified, listing each one; per-row and bulk verify with method work; survey verify/reject respects role gating; every transition is audited.
-- [ ] Editing verified data without reopen is blocked; reopen is audited and clears verification; re-verification is required.
-- [ ] Media: one-owner rule enforced, sha256 mismatch ends `failed`, desk and mobile upload both reach `complete`, grid/lightbox work, no fake imagery.
-- [ ] Web review pages show status chip, checklist drawer, room board, critical table and media grid with real mock data.
-- [ ] `/m` contains only Projects/Surveys/Sync/Account and no commercial/workshop/admin screen; no project QR or scanner exists.
-- [ ] `arch:check` 0; no storage/network access in presentation; no Svelte 4 syntax; offline modules never imported from SSR-safe files.
-- [ ] UUIDs everywhere, deterministic seeds, schema version bumped with a migration, idempotency keys stable across reloads.
-- [ ] Unit + e2e suites in §5.4 pass; browser matrix (mobile routes at 320/390 plus tablet, web at 768/1280/1920; dark; high contrast; 200 %; keyboard) clean with zero console errors.
-- [ ] Full pnpm gate green; committed and pushed to `main`; phase status flipped only after the gate.
+- [x] A Surveyor can open `/m/projects` (assigned only), open a survey, capture rooms/walls/openings/utilities/obstacles/measurements/notes/media **with the network offline**, see queued chips, reconnect, and watch the outbox drain.
+- [x] Conflict path: a server-side change produces a conflict row, the side-by-side sheet shows both values, server wins, and re-apply works.
+- [x] Submit is blocked with a named reason when a room lacks ceiling height, a length/width pair is missing, an opening has no dims or the checklist is incomplete; it succeeds when all pass.
+- [x] G8: verify is blocked while any manufacturing-critical measurement is unverified, listing each one; per-row and bulk verify with method work; survey verify/reject respects role gating; every transition is audited.
+- [x] Editing verified data without reopen is blocked; reopen is audited and clears verification; re-verification is required.
+- [x] Media: one-owner rule enforced, sha256 mismatch ends `failed`, desk and mobile upload both reach `complete`, grid/lightbox work, no fake imagery.
+- [x] Web review pages show status chip, checklist drawer, room board, critical table and media grid with real mock data.
+- [x] `/m` contains only Projects/Surveys/Sync/Account and no commercial/workshop/admin screen; no project QR or scanner exists.
+- [x] `arch:check` 0; no storage/network access in presentation; no Svelte 4 syntax; offline modules never imported from SSR-safe files.
+- [x] UUIDs everywhere, deterministic seeds, schema version bumped with a migration, idempotency keys stable across reloads.
+- [x] Unit + e2e suites in §5.4 pass; browser matrix (mobile routes at 320/390 plus tablet, web at 768/1280/1920; dark; high contrast; 200 %; keyboard) clean with zero console errors.
+- [x] Full pnpm gate green; committed and pushed to `main`; phase status flipped only after the gate.
 
 ---
 
