@@ -101,18 +101,18 @@ export const NAV_SECTIONS: readonly NavSection[] = Object.freeze([
 		id: 'catalogue',
 		label: 'Catalogue',
 		items: [
-			item('Cabinets', '/catalogue/cabinets', Box, PERMISSIONS.CABINET_VIEW),
-			item('Component rules', '/catalogue/rules', Layers, PERMISSIONS.CABINET_VIEW)
+			item('Cabinets', '/catalogue/cabinets', Box, PERMISSIONS.CABINET_VIEW, true),
+			item('Component rules', '/catalogue/rules', Layers, PERMISSIONS.CABINET_VIEW, true)
 		]
 	},
 	{
 		id: 'materials',
 		label: 'Materials',
 		items: [
-			item('Decor', '/materials/decor', Box, PERMISSIONS.MATERIALS_VIEW),
-			item('Edging', '/materials/edging', Layers, PERMISSIONS.MATERIALS_VIEW),
-			item('Suppliers', '/materials/suppliers', Truck, PERMISSIONS.MATERIALS_VIEW),
-			item('Manufacturers', '/materials/manufacturers', Factory, PERMISSIONS.MATERIALS_VIEW)
+			item('Decor', '/materials/decor', Box, PERMISSIONS.MATERIALS_VIEW, true),
+			item('Edging', '/materials/edging', Layers, PERMISSIONS.MATERIALS_VIEW, true),
+			item('Suppliers', '/materials/suppliers', Truck, PERMISSIONS.MATERIALS_VIEW, true),
+			item('Manufacturers', '/materials/manufacturers', Factory, PERMISSIONS.MATERIALS_VIEW, true)
 		]
 	},
 	{

@@ -17,6 +17,9 @@ export const ROUTE_PERMISSIONS: Readonly<Record<string, string | null>> = Object
 	'/imports/new': PERMISSIONS.IMPORT_CREATE,
 	// Phase 2 — survey review (web) and the mobile capture shell.
 	'/surveys': PERMISSIONS.SURVEY_VIEW,
+	// Phase 3 — catalogue and materials master data.
+	'/catalogue': PERMISSIONS.CABINET_VIEW,
+	'/materials': PERMISSIONS.MATERIALS_VIEW,
 	'/m/login': null,
 	'/m': PERMISSIONS.SURVEY_VIEW,
 	'/m/projects': PERMISSIONS.SURVEY_VIEW,
