@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { isApiError } from '$network/errors';
 	import { PERMISSIONS } from '$shared/domain/permissions';
@@ -87,26 +88,23 @@
 		};
 	}
 
-	function buildHref(state: ListUrlState): string {
-		const params = new URLSearchParams();
+	function buildQuery(state: ListUrlState): string {
+		const params = new SvelteURLSearchParams();
 		if (state.kind !== 'all') params.set('kind', state.kind);
 		if (state.status !== 'all') params.set('status', state.status);
 		if (state.page > 1) params.set('page', String(state.page));
-		const suffix = params.toString();
-		return suffix.length > 0 ? `/imports?${suffix}` : '/imports';
+		return params.toString();
 	}
 
 	function applyUrl(next: ListUrlState): void {
-		const target = buildHref(next);
+		const suffix = buildQuery(next);
+		const target = suffix.length > 0 ? `/imports?${suffix}` : '/imports';
 		if (target === `${page.url.pathname}${page.url.search}`) return;
-		void goto(
-			target.includes('?') ? resolve(target as `/imports?${string}`) : resolve('/imports'),
-			{
-				replaceState: true,
-				keepFocus: true,
-				noScroll: true
-			}
-		);
+		void goto(suffix.length > 0 ? resolve(`/imports?${suffix}`) : resolve('/imports'), {
+			replaceState: true,
+			keepFocus: true,
+			noScroll: true
+		});
 	}
 
 	const urlState = $derived.by(() => readUrl(page.url.searchParams));

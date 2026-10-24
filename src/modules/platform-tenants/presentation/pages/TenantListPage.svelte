@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -61,7 +62,7 @@
 	}
 
 	function syncUrl(searchValue: string, statusValue: string): void {
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		if (searchValue.trim().length > 0) params.set('q', searchValue.trim());
 		if (statusValue !== 'all') params.set('status', statusValue);
 		const suffix = params.toString();

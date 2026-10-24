@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
 	import { PanelLeft, PanelLeftClose } from '@lucide/svelte';
 	import { cn } from '$lib/utils';
 	import type { NavItem, NavSection } from '$shared/application/navigation';
+	import { resolvePath } from '$shared/lib/paths';
 	import { IconButton, Tooltip } from '$shared/presentation/ui';
 
 	interface Props {
@@ -60,17 +60,18 @@
 </script>
 
 {#snippet navItem(entry: NavItem)}
+	{@const href = resolvePath(entry.href)}
 	<a
-		href={resolve(entry.href as '/dashboard')}
+		{href}
 		data-nav-item
-		aria-current={isActive(entry.href) ? 'page' : undefined}
+		aria-current={isActive(href) ? 'page' : undefined}
 		aria-label={collapsed ? entry.label : undefined}
 		onclick={onNavigate}
 		onkeydown={handleItemKeydown}
 		class={cn(
 			'nav-row flex items-center gap-3 rounded-md text-callout transition-colors',
 			collapsed ? 'min-w-target justify-center px-2' : 'w-full border-s-2 px-3',
-			isActive(entry.href)
+			isActive(href)
 				? 'border-brand bg-brand-soft font-medium text-brand'
 				: 'border-transparent text-ink-secondary hover:bg-canvas-nested hover:text-ink'
 		)}

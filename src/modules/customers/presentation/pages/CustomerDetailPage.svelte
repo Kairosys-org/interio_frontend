@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { PERMISSIONS } from '$shared/domain/permissions';
@@ -168,7 +169,7 @@
 		if (tab === lastTabParam) return;
 		lastTabParam = tab;
 
-		const params = new URLSearchParams(page.url.searchParams);
+		const params = new SvelteURLSearchParams(page.url.searchParams);
 		if (tab === 'properties') params.delete('tab');
 		else params.set('tab', tab);
 

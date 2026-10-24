@@ -24,7 +24,15 @@ export default tseslint.config(
 			parserOptions: {
 				extraFileExtensions: ['.svelte'],
 				parser: tseslint.parser,
-				svelteConfig
+				svelteConfig,
+				/**
+				 * `standards/architecture.md` §14.2. Type-aware rules need the
+				 * program: `svelte/no-navigation-without-resolve` only trusts a
+				 * `resolve()` call or a value typed `ResolvedPathname`, and
+				 * without the program it rejects every resolved value.
+				 */
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname
 			}
 		}
 	},

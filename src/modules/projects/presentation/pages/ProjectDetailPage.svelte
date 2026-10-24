@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
 	import { sessionStore } from '$shared/application/session';
@@ -222,7 +223,7 @@
 		}
 
 		lastUrlTab = current;
-		const params = new URLSearchParams(page.url.searchParams);
+		const params = new SvelteURLSearchParams(page.url.searchParams);
 		if (current === 'overview') params.delete('tab');
 		else params.set('tab', current);
 		const suffix = params.toString();

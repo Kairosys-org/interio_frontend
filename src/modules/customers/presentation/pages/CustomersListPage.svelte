@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { CircleAlert, Plus } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { isApiError } from '$network/errors';
@@ -121,7 +122,7 @@
 	const hasFilters = $derived(query.trim().length > 0 || stateFilter !== 'all');
 
 	function syncUrl(): void {
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		if (query.trim().length > 0) params.set('q', query.trim());
 		if (stateFilter !== 'all') params.set('state', stateFilter);
 		params.set('sort', sort);

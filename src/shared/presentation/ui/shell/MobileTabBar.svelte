@@ -20,10 +20,10 @@
 	let { pending = 0, class: className }: Props = $props();
 
 	const TABS = [
-		{ href: '/m/projects', label: 'Projects', Icon: FolderKanban },
-		{ href: '/m/surveys', label: 'Surveys', Icon: ClipboardList },
-		{ href: '/m/sync', label: 'Sync', Icon: RefreshCw },
-		{ href: '/m/account', label: 'Account', Icon: UserRound }
+		{ id: 'projects', href: resolve('/m/projects'), label: 'Projects', Icon: FolderKanban },
+		{ id: 'surveys', href: resolve('/m/surveys'), label: 'Surveys', Icon: ClipboardList },
+		{ id: 'sync', href: resolve('/m/sync'), label: 'Sync', Icon: RefreshCw },
+		{ id: 'account', href: resolve('/m/account'), label: 'Account', Icon: UserRound }
 	] as const;
 
 	const pathname = $derived(page.url.pathname);
@@ -41,11 +41,11 @@
 	)}
 >
 	<ul class="flex items-stretch justify-around">
-		{#each TABS as tab (tab.href)}
+		{#each TABS as tab (tab.id)}
 			{@const active = isActive(tab.href)}
 			<li class="flex min-w-0 flex-1">
 				<a
-					href={resolve(tab.href as '/m/projects')}
+					href={tab.href}
 					aria-current={active ? 'page' : undefined}
 					aria-label={tab.label}
 					title={tab.label}
@@ -56,7 +56,7 @@
 				>
 					<span class="relative">
 						<tab.Icon size={20} strokeWidth={active ? 2 : 1.75} aria-hidden="true" />
-						{#if tab.href === '/m/sync' && pending > 0}
+						{#if tab.id === 'sync' && pending > 0}
 							<span
 								class="absolute -end-2 -top-2 inline-flex min-w-5 items-center justify-center rounded-full bg-caution px-1 text-caption text-on-brand tabular-nums"
 							>

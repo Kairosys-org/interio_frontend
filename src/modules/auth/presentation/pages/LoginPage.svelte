@@ -5,6 +5,7 @@
 	import { session, sessionStore } from '$shared/application/session';
 	import { DEMO_PASSWORD } from '$shared/data/demo-seed';
 	import type { SessionUser } from '$shared/domain/user';
+	import { resolvePath } from '$shared/lib/paths';
 	import { Button, Input, Skeleton } from '$shared/presentation/ui';
 	import { isApiError } from '$network/errors';
 	import { authApi } from '../../data/api';
@@ -40,7 +41,7 @@
 		session.setUser(user);
 		const fallback = user.platform ? resolve('/platform/tenants') : resolve('/dashboard');
 		const next = safeRedirect(redirectTo);
-		void goto(next ? resolve(next as '/dashboard') : fallback, { replaceState: true });
+		void goto(next ? resolvePath(next) : fallback, { replaceState: true });
 	}
 
 	function handleLoginResult(result: LoginResult, submittedEmail: string): void {

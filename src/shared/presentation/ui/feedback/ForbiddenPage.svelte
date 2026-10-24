@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolvePath } from '$shared/lib/paths';
 	import { Ban, CircleAlert, SearchX, WifiOff } from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils';
@@ -32,6 +32,8 @@
 		onRetry,
 		class: className
 	}: Props = $props();
+
+	const back = $derived(resolvePath(backHref));
 
 	const VARIANTS: Record<
 		Variant,
@@ -118,14 +120,14 @@
 
 			{#if showRetry}
 				<a
-					href={resolve(backHref as '/dashboard')}
+					href={back}
 					class="inline-flex min-h-target min-w-target items-center justify-center rounded-md px-4 text-callout font-medium text-brand underline underline-offset-2"
 				>
 					{backLabel}
 				</a>
 			{:else}
 				<a
-					href={resolve(backHref as '/dashboard')}
+					href={back}
 					class="inline-flex min-h-target min-w-target items-center justify-center rounded-md bg-brand px-4 text-callout font-medium text-on-brand hover:bg-brand-hover"
 				>
 					{backLabel}

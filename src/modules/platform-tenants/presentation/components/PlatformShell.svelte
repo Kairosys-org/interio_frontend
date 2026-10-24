@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import type { ResolvedPathname } from '$app/types';
 	import {
 		Building2,
 		ChevronDown,
@@ -31,13 +32,13 @@
 
 	interface PlatformNavItem {
 		label: string;
-		href: string;
+		href: ResolvedPathname;
 		icon: Component;
 	}
 
 	const NAV_ITEMS: readonly PlatformNavItem[] = [
-		{ label: 'Tenants', href: '/platform/tenants', icon: Building2 },
-		{ label: 'Audit log', href: '/platform/audit', icon: ClipboardList }
+		{ label: 'Tenants', href: resolve('/platform/tenants'), icon: Building2 },
+		{ label: 'Audit log', href: resolve('/platform/audit'), icon: ClipboardList }
 	];
 
 	const pathname = $derived(page.url.pathname);
@@ -140,7 +141,7 @@
 			{@const Icon = item.icon}
 			<li>
 				<a
-					href={resolve(item.href as '/platform/tenants')}
+					href={item.href}
 					aria-current={active ? 'page' : undefined}
 					onclick={() => onNavigate?.()}
 					class={cn(
