@@ -15,6 +15,7 @@ import {
 	demoSurveyorId
 } from '$shared/data/demo-record-plan';
 import type {
+	AuditEventRecord,
 	SurveyMeasurementRecord,
 	SurveyNoteRecord,
 	SurveyObstacleRecord,
@@ -25,6 +26,8 @@ import type {
 	SurveyWallRecord
 } from '$shared/data/records';
 import type { SurveyState } from '$shared/domain/record-states';
+import { ROLES } from '$shared/domain/roles';
+import { deterministicUuid } from '$shared/lib/deterministic';
 import { isCriticalDimensionKind } from '../domain/types';
 
 /**
@@ -1079,6 +1082,127 @@ export function seedSurveys(): Record<string, unknown[]> {
 			...submittedMeasurements,
 			...rejectedMeasurements
 		],
-		[COLLECTIONS.surveyNotes]: [...liveNotes, ...verifiedNotes]
+		[COLLECTIONS.surveyNotes]: [...liveNotes, ...verifiedNotes],
+		[COLLECTIONS.auditEvents]: surveyAuditEvents()
 	};
+}
+
+/**
+ * Seeded activity trail (phase-2 §8 "every transition is audited").
+ *
+ * The fixtures above represent surveys that were already created, started,
+ * submitted, verified or rejected. Without matching audit rows the web detail
+ * page would show "No survey activity yet" for a survey that clearly has a
+ * history, so the same transitions are written here with deterministic ids and
+ * the demo clock — never `newUuid()` or the wall clock.
+ */
+function surveyAuditEvents(): AuditEventRecord[] {
+	const surveyor = demoSurveyorId('surveyor');
+	const surveyorTwo = demoSurveyorId('surveyor-2');
+	const surveyorThree = demoSurveyorId('surveyor-3');
+	const manager = deterministicUuid(`user:opulent:${ROLES.PRODUCTION_MANAGER}`);
+	const email = {
+		surveyor: 'surveyor@opulentinteriors.co.uk',
+		surveyorTwo: 'liam.oconnor@opulentinteriors.co.uk',
+		surveyorThree: 'mei.tan@opulentinteriors.co.uk',
+		manager: 'production@opulentinteriors.co.uk'
+	};
+
+	function event(
+		key: string,
+		survey: { projectN: number; surveyN: number },
+		action: string,
+		occurredAt: string,
+		actor: { id: string; email: string },
+		payload: Record<string, unknown> | null = null
+	): AuditEventRecord {
+		return {
+			id: deterministicUuid(`survey-audit:${key}`),
+			scope: 'tenant',
+			tenantId: TENANT_ID,
+			actorUserId: actor.id,
+			actorEmail: actor.email,
+			action,
+			subjectType: 'survey',
+			subjectId: demoSurveyId(survey.projectN, survey.surveyN),
+			occurredAt,
+			payload
+		};
+	}
+
+	const captured = { id: surveyor, email: email.surveyor };
+	const managerActor = { id: manager, email: email.manager };
+
+	return [
+		// Project 1 · survey 1 — in progress, three critical measurements unverified.
+		event('live:create', LIVE, 'create', demoDays(12), captured, { status: 'draft' }),
+		event('live:start', LIVE, 'transition', demoDays(6), captured, {
+			action: 'start',
+			from: 'draft',
+			to: 'in_progress'
+		}),
+		event('live:room', LIVE, 'create_room', demoDays(6), captured, {
+			roomId: demoSurveyRoomId(1, 1, 1),
+			caption: 'Kitchen'
+		}),
+		event('live:measurement', LIVE, 'verify_measurement', demoDays(2), captured, {
+			measurementId: demoSurveyMeasurementId(1, 1, 1, 2),
+			method: 'measured_on_site'
+		}),
+		event('live:revision', LIVE, 'update_measurement', demoDays(2), captured, {
+			measurementId: demoSurveyMeasurementId(1, 1, 1, 1)
+		}),
+		// Project 1 · survey 2 — verified by the production manager.
+		event('verified:create', VERIFIED, 'create', demoDays(21), captured, { status: 'draft' }),
+		event('verified:submit', VERIFIED, 'transition', demoDays(3), captured, {
+			action: 'submit',
+			from: 'in_progress',
+			to: 'submitted'
+		}),
+		event('verified:verify', VERIFIED, 'transition', demoDays(1), managerActor, {
+			action: 'verify',
+			from: 'submitted',
+			to: 'verified'
+		}),
+		// Project 2 · survey 1 — submitted, waiting for verification.
+		event(
+			'submitted:create',
+			SUBMITTED,
+			'create',
+			demoDays(15),
+			{ id: surveyorTwo, email: email.surveyorTwo },
+			{ status: 'draft' }
+		),
+		event(
+			'submitted:submit',
+			SUBMITTED,
+			'transition',
+			demoDays(1),
+			{ id: surveyorTwo, email: email.surveyorTwo },
+			{ action: 'submit', from: 'in_progress', to: 'submitted' }
+		),
+		// Project 3 · survey 1 — rejected with a reason.
+		event(
+			'rejected:create',
+			REJECTED,
+			'create',
+			demoDays(19),
+			{ id: surveyorThree, email: email.surveyorThree },
+			{ status: 'draft' }
+		),
+		event(
+			'rejected:submit',
+			REJECTED,
+			'transition',
+			demoDays(4),
+			{ id: surveyorThree, email: email.surveyorThree },
+			{ action: 'submit', from: 'in_progress', to: 'submitted' }
+		),
+		event('rejected:reject', REJECTED, 'transition', demoDays(4), managerActor, {
+			action: 'reject',
+			from: 'submitted',
+			to: 'rejected',
+			reason: 'Door width conflicts with the proposed run — re-measure the entrance and resubmit.'
+		})
+	];
 }

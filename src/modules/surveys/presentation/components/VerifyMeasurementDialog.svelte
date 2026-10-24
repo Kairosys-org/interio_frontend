@@ -71,7 +71,8 @@
 	const shownError = $derived(error ?? localError);
 
 	async function submit(): Promise<void> {
-		if (busy || measurement === null) return;
+		// Bulk mode has no single measurement; `onconfirm` owns the row list.
+		if (busy) return;
 		localError = null;
 
 		if (method === '') {
