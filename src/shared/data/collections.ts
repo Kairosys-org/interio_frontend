@@ -21,7 +21,19 @@ export const COLLECTIONS = {
 	surveyMeasurements: 'survey_measurement',
 	surveyNotes: 'survey_note',
 	assets: 'asset',
-	syncOperations: 'sync_operation'
+	syncOperations: 'sync_operation',
+	// Phase 3 — catalogue and materials master data.
+	cabinetCatalog: 'cabinet_catalog',
+	cabinetParameters: 'cabinet_parameter',
+	cabinetComponentRules: 'cabinet_component_rule',
+	manufacturers: 'manufacturer',
+	materialCollections: 'material_collection',
+	decors: 'decor',
+	edgings: 'edging',
+	decorEdgings: 'decor_edging',
+	suppliers: 'supplier',
+	decorSuppliers: 'decor_supplier',
+	decorAttributes: 'decor_attribute'
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

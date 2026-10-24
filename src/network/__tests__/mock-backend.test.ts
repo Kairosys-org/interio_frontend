@@ -129,7 +129,7 @@ describe('mock backend reset and migrations', () => {
 	});
 
 	it('declares a migration map and upgrades older schema versions', () => {
-		expect(MOCK_DB_SCHEMA_VERSION).toBe(3);
+		expect(MOCK_DB_SCHEMA_VERSION).toBe(4);
 		expect(typeof MIGRATIONS).toBe('object');
 		expect(typeof MIGRATIONS).not.toBe('function');
 

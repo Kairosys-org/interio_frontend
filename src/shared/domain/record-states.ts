@@ -93,3 +93,73 @@ export type AssetUploadState = (typeof ASSET_UPLOAD_STATES)[number];
 /** Outbox rows survive a reload, so `sending` must be recoverable too. */
 export const SYNC_OP_STATES = ['queued', 'sending', 'sent', 'failed', 'conflict'] as const;
 export type SyncOpState = (typeof SYNC_OP_STATES)[number];
+
+/* ------------------------------------------------------------------ */
+/* Phase 3 — catalogue and materials (Part 5 §4.30–§4.31, Part 8).     */
+/* These are the only values the mock backend and import mapper accept. */
+/* ------------------------------------------------------------------ */
+
+export const CABINET_FAMILIES = [
+	'base',
+	'wall',
+	'tall',
+	'sink',
+	'drawer',
+	'corner',
+	'appliance',
+	'wardrobe',
+	'drawer_chest',
+	'shelving',
+	'custom'
+] as const;
+export type CabinetFamily = (typeof CABINET_FAMILIES)[number];
+
+export const CONSTRUCTION_METHODS = ['cam_lock', 'dowel', 'confirmat', 'custom'] as const;
+export type ConstructionMethod = (typeof CONSTRUCTION_METHODS)[number];
+
+/** `enum`, `bool` and `text` carry no numeric bounds (Part 5 §4.30). */
+export const CABINET_PARAMETER_UNITS = ['mm', 'count', 'enum', 'bool', 'text'] as const;
+export type CabinetParameterUnit = (typeof CABINET_PARAMETER_UNITS)[number];
+
+export const DECOR_COLOUR_FAMILIES = [
+	'white',
+	'grey',
+	'black',
+	'beige',
+	'brown',
+	'wood_tone',
+	'blue',
+	'green',
+	'red',
+	'other'
+] as const;
+export type DecorColourFamily = (typeof DECOR_COLOUR_FAMILIES)[number];
+
+export const DECOR_MATERIAL_TYPES = [
+	'melamine_board',
+	'mdf',
+	'plywood',
+	'veneer',
+	'lacquer',
+	'acrylic',
+	'glass',
+	'metal',
+	'stone',
+	'other'
+] as const;
+export type DecorMaterialType = (typeof DECOR_MATERIAL_TYPES)[number];
+
+export const DECOR_CORES = ['chipboard', 'mdf', 'plywood', 'other'] as const;
+export type DecorCore = (typeof DECOR_CORES)[number];
+
+export const GRAIN_DIRECTIONS = ['along_length', 'along_width', 'none'] as const;
+export type GrainDirection = (typeof GRAIN_DIRECTIONS)[number];
+
+export const PREMIUM_TIERS = ['standard', 'premium', 'luxury'] as const;
+export type PremiumTier = (typeof PREMIUM_TIERS)[number];
+
+export const MATERIAL_STATUSES = ['active', 'discontinued'] as const;
+export type MaterialStatus = (typeof MATERIAL_STATUSES)[number];
+
+export const EDGING_MATCH_TYPES = ['exact', 'complementary', 'alt'] as const;
+export type EdgingMatchType = (typeof EDGING_MATCH_TYPES)[number];

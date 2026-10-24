@@ -531,3 +531,43 @@ export const DEMO_PROJECT_ASSIGNMENT_PLAN: ReadonlyArray<{
 	}
 	return assignments;
 });
+
+/* ------------------------------------------------------------------ */
+/* Phase 3 — catalogue and materials identities (phase-3 §5.2).        */
+/* The seeders and the import committer share these helpers so foreign */
+/* keys never drift between cabinets, decors, edgings and suppliers.   */
+/* ------------------------------------------------------------------ */
+
+export function demoCabinetId(n: number): string {
+	return deterministicUuid(`cabinet:${n}`);
+}
+export function demoCabinetParameterId(cabinetN: number, key: string): string {
+	return deterministicUuid(`cabinet-parameter:${cabinetN}:${key}`);
+}
+export function demoCabinetRuleId(cabinetN: number, ruleVersion: string, partType: string): string {
+	return deterministicUuid(`cabinet-rule:${cabinetN}:${ruleVersion}:${partType}`);
+}
+export function demoManufacturerId(n: number): string {
+	return deterministicUuid(`manufacturer:${n}`);
+}
+export function demoMaterialCollectionId(manufacturerN: number, collectionN: number): string {
+	return deterministicUuid(`material-collection:${manufacturerN}:${collectionN}`);
+}
+export function demoDecorId(n: number): string {
+	return deterministicUuid(`decor:${n}`);
+}
+export function demoEdgingId(n: number): string {
+	return deterministicUuid(`edging:${n}`);
+}
+export function demoSupplierId(n: number): string {
+	return deterministicUuid(`supplier:${n}`);
+}
+export function demoDecorEdgingId(decorN: number, edgingN: number): string {
+	return deterministicUuid(`decor-edging:${decorN}:${edgingN}`);
+}
+export function demoDecorSupplierId(decorN: number, supplierN: number): string {
+	return deterministicUuid(`decor-supplier:${decorN}:${supplierN}`);
+}
+export function demoDecorAttributeId(decorN: number, key: string): string {
+	return deterministicUuid(`decor-attribute:${decorN}:${key}`);
+}

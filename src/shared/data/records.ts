@@ -1,12 +1,22 @@
 import type {
 	AssetUploadState,
+	CabinetFamily,
+	CabinetParameterUnit,
+	ConstructionMethod,
 	CustomerSource,
 	CustomerState,
+	DecorColourFamily,
+	DecorCore,
+	DecorMaterialType,
+	EdgingMatchType,
+	GrainDirection,
 	ImportKind,
 	ImportOutcome,
 	ImportStatus,
 	ImportValidation,
+	MaterialStatus,
 	PreferredChannel,
+	PremiumTier,
 	ProjectStatus,
 	ProjectType,
 	PropertyState,
@@ -391,4 +401,159 @@ export interface SyncOperationRecord {
 	clientTimestamp: string;
 	createdAt: string;
 	sentAt: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 3 — catalogue and materials (part 5 §4.30–§4.31).             */
+/* */
+
+/** JSON-safe parameter default: numeric for mm/count, typed for the rest. */
+export type CabinetParameterValue = string | number | boolean | null;
+
+export interface CabinetRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	caption: string;
+	family: CabinetFamily;
+	description: string | null;
+	constructionMethod: ConstructionMethod;
+	/** Resolved defaults for placement; recomputed from parameter defaults. */
+	defaultConfig: Record<string, unknown>;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface CabinetParameterRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	cabinetId: Uuid;
+	paramName: string;
+	unit: CabinetParameterUnit;
+	minValue: number | null;
+	maxValue: number | null;
+	defaultValue: CabinetParameterValue;
+	allowedValues: string[] | null;
+	required: boolean;
+	sortOrder: number;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface CabinetComponentRuleRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	cabinetId: Uuid;
+	/** Numeric string; increments when the rule changes functionally. */
+	ruleVersion: string;
+	partType: string;
+	/** Structured declarative expression; never evaluated in the browser. */
+	expr: Record<string, unknown>;
+	/** Applicability clause; stored verbatim until Phase 6 defines execution. */
+	condition: Record<string, unknown> | null;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ManufacturerRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	caption: string;
+	country: string | null;
+	website: string | null;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface MaterialCollectionRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	manufacturerId: Uuid;
+	caption: string;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface DecorSheetSizeRecord {
+	length: number;
+	width: number;
+}
+
+export interface DecorRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	collectionId: Uuid;
+	caption: string;
+	decorCode: string;
+	textureSurface: string | null;
+	colourFamily: DecorColourFamily | null;
+	materialType: DecorMaterialType;
+	core: DecorCore;
+	defaultThicknessMm: number;
+	sheetSizeMm: DecorSheetSizeRecord;
+	grainDirection: GrainDirection | null;
+	premiumTier: PremiumTier;
+	status: MaterialStatus;
+	customerVisible: boolean;
+	sampleAssetId: Uuid | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface EdgingRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	caption: string;
+	edgingCode: string;
+	materialType: string;
+	thicknessMm: number;
+	colourFamily: DecorColourFamily | null;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface DecorEdgingRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	decorId: Uuid;
+	edgingId: Uuid;
+	matchType: EdgingMatchType;
+	createdAt: string;
+}
+
+export interface SupplierRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	caption: string;
+	contact: string | null;
+	leadTimeDays: number | null;
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface DecorSupplierRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	decorId: Uuid;
+	supplierId: Uuid;
+	supplierCode: string;
+	isPrimary: boolean;
+	altSupplierCode: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface DecorAttributeRecord {
+	id: Uuid;
+	tenantId: Uuid;
+	decorId: Uuid;
+	attrName: string;
+	attrValue: string;
+	createdAt: string;
+	updatedAt: string;
 }
