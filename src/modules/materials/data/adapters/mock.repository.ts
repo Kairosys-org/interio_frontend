@@ -1,0 +1,51 @@
+import type { MaterialsRepository } from '../repository';
+import {
+	mockCreateCollection,
+	mockCreateDecor,
+	mockCreateEdging,
+	mockCreateManufacturer,
+	mockCreateSupplier,
+	mockGetDecor,
+	mockGetSupplier,
+	mockLinkEdging,
+	mockLinkSupplier,
+	mockListDecors,
+	mockListEdgings,
+	mockListManufacturers,
+	mockListSuppliers,
+	mockRemoveAttribute,
+	mockUnlinkEdging,
+	mockUnlinkSupplier,
+	mockUpdateCollection,
+	mockUpdateDecor,
+	mockUpdateEdging,
+	mockUpdateManufacturer,
+	mockUpdateSupplier,
+	mockUpsertAttribute
+} from '../mock';
+
+/** Thin, boring adapter: one line per repository method (architecture §4.7). */
+export const mockMaterialsRepository: MaterialsRepository = {
+	listDecors: async (params) => mockListDecors(params),
+	getDecor: async (id) => mockGetDecor(id),
+	createDecor: async (input) => mockCreateDecor(input),
+	updateDecor: async (id, input) => mockUpdateDecor(id, input),
+	listEdgings: async (params) => mockListEdgings(params),
+	createEdging: async (input) => mockCreateEdging(input),
+	updateEdging: async (id, input) => mockUpdateEdging(id, input),
+	linkEdging: async (decorId, input) => mockLinkEdging(decorId, input),
+	unlinkEdging: async (decorId, edgingId) => mockUnlinkEdging(decorId, edgingId),
+	listSuppliers: async (params) => mockListSuppliers(params),
+	getSupplier: async (id) => mockGetSupplier(id),
+	createSupplier: async (input) => mockCreateSupplier(input),
+	updateSupplier: async (id, input) => mockUpdateSupplier(id, input),
+	linkSupplier: async (decorId, input) => mockLinkSupplier(decorId, input),
+	unlinkSupplier: async (decorId, supplierId) => mockUnlinkSupplier(decorId, supplierId),
+	upsertAttribute: async (decorId, input) => mockUpsertAttribute(decorId, input),
+	removeAttribute: async (decorId, attrName) => mockRemoveAttribute(decorId, attrName),
+	listManufacturers: async () => mockListManufacturers(),
+	createManufacturer: async (input) => mockCreateManufacturer(input),
+	updateManufacturer: async (id, input) => mockUpdateManufacturer(id, input),
+	createCollection: async (input) => mockCreateCollection(input),
+	updateCollection: async (id, input) => mockUpdateCollection(id, input)
+};

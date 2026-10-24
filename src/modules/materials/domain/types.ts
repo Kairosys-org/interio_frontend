@@ -153,6 +153,7 @@ export interface DecorListRow {
 	decorCode: string;
 	manufacturerId: Uuid;
 	manufacturerCaption: string;
+	collectionId: Uuid;
 	collectionCaption: string;
 	colourFamily: DecorColourFamily | null;
 	materialType: DecorMaterialType;
