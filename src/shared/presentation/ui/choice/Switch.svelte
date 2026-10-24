@@ -7,7 +7,7 @@
 		description?: string;
 		disabled?: boolean;
 		id?: string;
-		onchange?: (event: Event) => void;
+		onchange?: (checked: boolean) => void;
 		class?: string;
 	}
 
@@ -25,10 +25,10 @@
 	const fieldId = $derived(id ?? autoId);
 	const descriptionId = $derived(`${fieldId}-description`);
 
-	function toggle(event: MouseEvent): void {
+	function toggle(): void {
 		if (disabled) return;
 		checked = !checked;
-		onchange?.(event);
+		onchange?.(checked);
 	}
 </script>
 
@@ -38,7 +38,7 @@
 	aria-checked={checked}
 	aria-describedby={description ? descriptionId : undefined}
 	{disabled}
-	onclick={toggle}
+	onclick={() => toggle()}
 	class={cn(
 		'switch flex min-h-target w-full touch-manipulation items-center justify-between gap-3 rounded-md py-2 text-start select-none disabled:cursor-not-allowed',
 		className

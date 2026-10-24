@@ -104,7 +104,7 @@
 	}
 
 	function readStatus(value: string | null): 'active' | 'discontinued' | 'all' {
-		return value === 'active' || value === 'all' ? value : 'discontinued';
+		return value === 'active' || value === 'discontinued' ? value : 'all';
 	}
 
 	function readPage(value: string | null): number {

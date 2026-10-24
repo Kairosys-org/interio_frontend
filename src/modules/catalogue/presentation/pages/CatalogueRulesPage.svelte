@@ -233,8 +233,7 @@
 						label="Active"
 						checked={row.active}
 						disabled={togglingRuleId !== null}
-						onchange={(event) =>
-							void toggleRule(row, (event.currentTarget as HTMLInputElement).checked)}
+						onchange={(checked) => void toggleRule(row, checked)}
 					/>
 				</PermissionGate>
 			{/if}
