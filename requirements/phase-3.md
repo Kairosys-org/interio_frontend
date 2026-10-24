@@ -1,6 +1,6 @@
 # Phase 3 — Catalogue and materials
 
-> **Status:** not started · created 2026-10-22
+> **Status:** completed · 2026-10-24 · gate green (check, lint, arch:check, unit, e2e, build)
 > **Depends on:** phase-0 (phase-1 only for the imports shell) · **Unlocks:** 4 (placement + finishes), 6 (engineering rules)
 > **Spec map:** `spec.md` Part 12 §1 "Phase 2 — Commercial" (catalogue S14–S15 slice); Part 8 §1 (master cabinet catalogue) and §8 (materials & decor usage); Part 11 §4.5–§4.6; Part 10 §10–§11; Part 5 catalogue/materials entities; Part 4 §1 (no workflow, active/discontinued flags); Part 13 FT-M5-01, FT-M5-03, FT-M5-04, C-02.
 > **Read with:** `spec.md` Part 8 §1 + §8, Part 10 §10–§11, Part 11 §4.5–§4.6 + §4.13 (supplier/material import kinds), Part 5 catalogue/materials entities, Part 13 §3 (M5); `DESIGN.md` §3.7 + Appendix B, §5.5 (compact density), §9.2, §9.3 (`Tabs`, `Combobox`, `DataTable`), §10.2, §12, §13.2 (terminology), §15; `ui-ux.md` §9, §13, §15; `standards/architecture.md` §3–§4, §10–§11, §16, §22; `testing/ui-ux-tester.md`.
@@ -168,17 +168,17 @@ Phase 3 is the only phase permitted to start before phase 1 is completed (AGENTS
 
 ## 8. Done when
 
-- [ ] Cabinet list filters by family, opens a detail with Parameters and Component rules tabs; a parameter outside its bounds and a invalid rule JSON are rejected with the offending field named.
-- [ ] Rule save increments `rule_version` only on functional change; deactivating a rule keeps it visible in history; no rule is deleted.
-- [ ] `/catalogue/rules` aggregates rules across cabinets, filters by `rule_version`, toggles active, and every toggle is audited.
-- [ ] Decor list applies all five filters from the URL; detail shows Edgings, Suppliers, Attributes and the sample asset (or a labelled placeholder).
-- [ ] A second primary supplier for one decor is rejected and names the existing primary; attribute keys are unique; edging match types render and edit.
-- [ ] Manufacturers → collections tree creates/edits both levels; suppliers show lead time and linked decors.
-- [ ] Supplier and material import kinds are available in the Phase 1 wizard and follow the same staging/commit/outcome contract.
-- [ ] No preview-engineering UI exists yet (deferred to Phase 6); no snapshot/retro-engineering path is introduced.
-- [ ] `arch:check` 0; no mock/adapter imports in presentation; no business rules in `.svelte`; no Svelte 4 syntax; UUIDs and deterministic seeds only.
-- [ ] Unit + e2e suites pass; browser matrix on all nine routes (320/390/768/1280/1920, dark, high contrast, 200 %, keyboard), zero console errors, targets and contrast pass.
-- [ ] Full pnpm gate green; committed and pushed to `main`; phase status flipped only after the gate.
+- [x] Cabinet list filters by family, opens a detail with Parameters and Component rules tabs; a parameter outside its bounds and a invalid rule JSON are rejected with the offending field named.
+- [x] Rule save increments `rule_version` only on functional change; deactivating a rule keeps it visible in history; no rule is deleted.
+- [x] `/catalogue/rules` aggregates rules across cabinets, filters by `rule_version`, toggles active, and every toggle is audited.
+- [x] Decor list applies all five filters from the URL; detail shows Edgings, Suppliers, Attributes and the sample asset (or a labelled placeholder).
+- [x] A second primary supplier for one decor is rejected and names the existing primary; attribute keys are unique; edging match types render and edit.
+- [x] Manufacturers → collections tree creates/edits both levels; suppliers show lead time and linked decors.
+- [x] Supplier and material import kinds are available in the Phase 1 wizard and follow the same staging/commit/outcome contract.
+- [x] No preview-engineering UI exists yet (deferred to Phase 6); no snapshot/retro-engineering path is introduced.
+- [x] `arch:check` 0; no mock/adapter imports in presentation; no business rules in `.svelte`; no Svelte 4 syntax; UUIDs and deterministic seeds only.
+- [x] Unit + e2e suites pass; browser matrix on all nine routes (320/390/768/1280/1920, dark, high contrast, 200 %, keyboard), zero console errors, targets and contrast pass.
+- [x] Full pnpm gate green; committed and pushed to `main`; phase status flipped only after the gate.
 
 ---
 
